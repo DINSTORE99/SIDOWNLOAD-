@@ -1,5 +1,5 @@
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "ISI_BOT_TOKEN_KAMU";
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "ISI_CHAT_ID_KAMU";
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8206994792:AAGo26LadC8a86sF9VRiL_Q_S39FCbRMlZQ";
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "6452266025";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     message = `✅ <b>Media Berhasil Diunduh</b>\n📅 <i>${timeString}</i>\n🏷️ <b>Judul:</b> ${details?.title || "-"}\n📱 <b>Platform:</b> ${details?.platform || "-"}\n📥 <b>Format:</b> ${details?.label || "-"}`;
   }
 
-  if (!message || BOT_TOKEN === "ISI_BOT_TOKEN_KAMU") {
+  if (!message || BOT_TOKEN === "8206994792:AAGo26LadC8a86sF9VRiL_Q_S39FCbRMlZQ") {
     return res.status(200).json({ success: true, warning: "Bot credentials not set" });
   }
 
