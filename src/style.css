@@ -671,16 +671,26 @@ body {
   color: #838e9e;
   line-height: 1.45;
 }
-
 /* FOOTER */
 .app-footer {
   margin-top: 40px;
   padding: 24px 20px;
   border-top: 1px solid #14181f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  width: 100%;
   font-size: 11px;
   color: #64748b;
   line-height: 1.6;
+}
+
+.app-footer p {
+  margin: 2px 0;
+  text-align: center;
+  width: 100%;
 }
 
 .app-footer b {
@@ -689,6 +699,8 @@ body {
 
 .footer-sub {
   margin-top: 4px;
+  text-align: center;
+  width: 100%;
 }
 
 .footer-sub a {
@@ -720,27 +732,3 @@ body {
   }
 }
 
-
-
-
-
-
-.app-footer {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin-top: 40px;
-  padding: 24px 16px;
-}
-
-.app-footer p {
-  margin: 4px 0;
-  text-align: center;
-}
-
-.footer-sub {
-  text-align: center;
-}
