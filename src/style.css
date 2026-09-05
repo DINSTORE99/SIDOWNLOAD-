@@ -846,7 +846,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: transparent !important; /* Menyembunyikan teks S biasa */
+  color: transparent !important; 
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231ed760'><path d='M12 6c-2.5 0-4 1.2-4 3 0 3.5 8 1.5 8 5 0 2-1.7 3-4 3s-4.2-1.1-4.2-2.5h2.2c0 .5 1 1 2 1s2-.5 2-1.2c0-3.5-8-1.5-8-5 0-2.3 1.8-3.3 4-3.3 2.1 0 3.8 1 3.8 2.5h-2.1c-.2-.6-1-1-1.7-1z'/></svg>");
   background-repeat: no-repeat;
   background-position: center;
