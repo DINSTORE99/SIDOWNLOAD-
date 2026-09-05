@@ -449,7 +449,6 @@ export default function App() {
               <li><a href="#youtube">YouTube Downloader</a></li>
               <li><a href="#spotify">Spotify Downloader</a></li>
               <li><a href="#instagram">Instagram Downloader</a></li>
-              <li><a href="#cek-ban">Cek Ban WhatsApp</a></li>
             </ul>
           </div>
 
