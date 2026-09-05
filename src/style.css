@@ -715,3 +715,124 @@ body {
 .footer-sub a:hover {
   text-decoration: underline;
 }
+
+/* FULL DETAILED FOOTER */
+.app-footer-custom {
+  width: 100%;
+  max-width: 680px;
+  margin: 50px auto 0 auto;
+  padding: 30px 20px 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.footer-brand-section .brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-tagline {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.footer-links-group {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.footer-column h4 {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-column ul li a {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+.footer-column ul li a:hover {
+  color: #22c55e;
+}
+
+/* API CARD */
+.api-access-card {
+  background: #0f1319;
+  border: 1px solid #1a202c;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.api-card-text h3 {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.api-card-text p {
+  color: #64748b;
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.api-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #22c55e;
+  color: #000000;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  width: fit-content;
+  transition: opacity 0.2s ease;
+}
+
+.api-card-btn:hover {
+  opacity: 0.9;
+}
+
+/* FOOTER BOTTOM */
+.footer-bottom-copyright {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #14181f;
+  color: #475569;
+  font-size: 12px;
+}
+
+.footer-bottom-copyright p {
+  margin: 4px 0;
+}
+
+.footer-sub-text {
+  font-size: 11px;
+}
+
