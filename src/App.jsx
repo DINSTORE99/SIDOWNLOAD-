@@ -416,7 +416,7 @@ export default function App() {
         </section>
       </main>
 
-            <footer className="app-footer-custom">
+      <footer className="app-footer-custom">
         <div className="footer-brand-section">
           <div className="brand-wrapper">
             <div className="brand-icon">S</div>
@@ -479,4 +479,6 @@ export default function App() {
           <p className="footer-sub-text">Made with <span style={{ color: "#ef4444" }}>❤️</span> for everyone</p>
         </div>
       </footer>
-
+    </div>
+  );
+}
