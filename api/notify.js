@@ -19,13 +19,13 @@ export default async function handler(req, res) {
     message = `✅ <b>Media Berhasil Diunduh</b>\n📅 <i>${timeString}</i>\n🏷️ <b>Judul:</b> ${details?.title || "-"}\n📱 <b>Platform:</b> ${details?.platform || "-"}\n📥 <b>Format:</b> ${details?.label || "-"}`;
   }
 
-  if (!message || BOT_TOKEN === "8206994792:AAGo26LadC8a86sF9VRiL_Q_S39FCbRMlZQ") {
+  if (!message || !BOT_TOKEN) {
     return res.status(200).json({ success: true, warning: "Bot credentials not set" });
   }
 
   try {
     const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-    await fetch(telegramUrl, {
+    const response = await fetch(telegramUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -34,7 +34,9 @@ export default async function handler(req, res) {
         parse_mode: "HTML",
       }),
     });
-    return res.status(200).json({ success: true });
+
+    const data = await response.json();
+    return res.status(200).json({ success: true, data });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
