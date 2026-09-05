@@ -416,12 +416,67 @@ export default function App() {
         </section>
       </main>
 
-      <footer className="app-footer">
-        <p>© 2026 <b>SIDOWNLOAD</b>. Fast, Simple, and Free Media Downloader.</p>
-        <p className="footer-sub">
-          API Powered by <a href="https://api.dinn.my.id" target="_blank" rel="noopener noreferrer">api.dinn.my.id</a>
-        </p>
+            <footer className="app-footer-custom">
+        <div className="footer-brand-section">
+          <div className="brand-wrapper">
+            <div className="brand-icon">S</div>
+            <div className="brand-text">
+              <h2>SIDOWNLOAD</h2>
+              <span>FAST • SIMPLE • FREE</span>
+            </div>
+          </div>
+          <p className="footer-tagline">
+            Platform download gratis, cepat, mudah dan tanpa ribet.
+          </p>
+        </div>
+
+        <div className="footer-links-group">
+          <div className="footer-column">
+            <h4>Platform</h4>
+            <ul>
+              <li><a href="#tiktok">TikTok</a></li>
+              <li><a href="#youtube">YouTube</a></li>
+              <li><a href="#instagram">Instagram</a></li>
+              <li><a href="#spotify">Spotify</a></li>
+              <li><a href="#facebook">Facebook</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-column">
+            <h4>Tools</h4>
+            <ul>
+              <li><a href="#tiktok">TikTok Downloader</a></li>
+              <li><a href="#youtube">YouTube Downloader</a></li>
+              <li><a href="#spotify">Spotify Downloader</a></li>
+              <li><a href="#instagram">Instagram Downloader</a></li>
+              <li><a href="#cek-ban">Cek Ban WhatsApp</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-column">
+            <h4>Informasi</h4>
+            <ul>
+              <li><a href="https://api.dinn.my.id" target="_blank" rel="noreferrer">Dokumentasi API</a></li>
+              <li><a href="#status">Status Layanan</a></li>
+              <li><a href="#privacy">Privacy Policy</a></li>
+              <li><a href="#terms">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="api-access-card">
+          <div className="api-card-text">
+            <h3>API Access</h3>
+            <p>Gunakan API kami untuk integrasi di website atau bot kamu.</p>
+          </div>
+          <a href="https://api.dinn.my.id" target="_blank" rel="noopener noreferrer" className="api-card-btn">
+            Lihat Dokumentasi API →
+          </a>
+        </div>
+
+        <div className="footer-bottom-copyright">
+          <p>© 2026 SIDOWNLOAD. All rights reserved.</p>
+          <p className="footer-sub-text">Made with <span style={{ color: "#ef4444" }}>❤️</span> for everyone</p>
+        </div>
       </footer>
-    </div>
-  );
-}
+
