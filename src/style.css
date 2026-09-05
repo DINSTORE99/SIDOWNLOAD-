@@ -719,3 +719,28 @@ body {
     padding: 10px 14px 30px;
   }
 }
+
+
+
+
+
+
+.app-footer {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 40px;
+  padding: 24px 16px;
+}
+
+.app-footer p {
+  margin: 4px 0;
+  text-align: center;
+}
+
+.footer-sub {
+  text-align: center;
+}
