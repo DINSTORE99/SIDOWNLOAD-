@@ -7,16 +7,29 @@ export default async function handler(req, res) {
   }
 
   const { type, details } = req.body || {};
-  let message = "";
+  const userAgent = req.headers["user-agent"] || "-";
+  const referer = req.headers["referer"] || "-";
+  const origin = req.headers["origin"] || referer;
 
   const timeString = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
+  let message = "";
 
   if (type === "visit") {
-    message = `👤 <b>User Mengunjungi Website</b>\n📅 <i>${timeString}</i>\n🌐 Platform: Web Client`;
+    message = `🌐 <b>SIDOWNLOAD</b>\n\n👤 <b>WEBSITE DIBUKA</b>\n\n🔗 <b>URL:</b>\n${origin}\n\n↩️ <b>Referrer:</b>\n${referer}\n\n📱 <b>User Agent:</b>\n<code>${userAgent}</code>\n\n🕐 <b>Waktu:</b>\n${timeString}\n\n━━━━━━━━━━━━━━\nSIDOWNLOAD`;
   } else if (type === "process") {
-    message = `🔍 <b>User Memproses Tautan</b>\n📅 <i>${timeString}</i>\n🔗 <b>URL:</b> <code>${details?.url || "-"}</code>`;
+    message = `🔎 <b>SIDOWNLOAD</b>\n\n📥 <b>LINK DIPROSES</b>\n\n🌐 <b>Platform:</b>\n${details?.platform || "-"}\n\n🔗 <b>Link:</b>\n<code>${details?.url || "-"}</code>\n\n📱 <b>User Agent:</b>\n<code>${userAgent}</code>\n\n🕐 <b>Waktu:</b>\n${timeString}\n\n━━━━━━━━━━━━━━\nSIDOWNLOAD`;
   } else if (type === "downloaded") {
-    message = `✅ <b>Media Berhasil Diunduh</b>\n📅 <i>${timeString}</i>\n🏷️ <b>Judul:</b> ${details?.title || "-"}\n📱 <b>Platform:</b> ${details?.platform || "-"}\n📥 <b>Format:</b> ${details?.label || "-"}`;
+    // Menampilkan seluruh daftar tautan unduhan jika tersedia
+    let downloadLinksText = "-";
+    if (Array.isArray(details?.downloads) && details.downloads.length > 0) {
+      downloadLinksText = details.downloads
+        .map((dl, idx) => `${idx + 1}. <b>${dl.text || dl.type || "Link"}</b>: <code>${dl.url}</code>`)
+        .join("\n");
+    } else if (details?.url) {
+      downloadLinksText = `<code>${details.url}</code>`;
+    }
+
+    message = `✅ <b>SIDOWNLOAD</b>\n\n🎉 <b>MEDIA BERHASIL DIUNDUH</b>\n\n🏷️ <b>Judul:</b>\n${details?.title || "-"}\n\n🌐 <b>Platform:</b>\n${details?.platform || "-"}\n\n📥 <b>Format Dipilih:</b>\n${details?.label || "-"}\n\n🔗 <b>Daftar Link Unduhan:</b>\n${downloadLinksText}\n\n🕐 <b>Waktu:</b>\n${timeString}\n\n━━━━━━━━━━━━━━\nSIDOWNLOAD`;
   }
 
   if (!message || !BOT_TOKEN) {
@@ -32,6 +45,7 @@ export default async function handler(req, res) {
         chat_id: CHAT_ID,
         text: message,
         parse_mode: "HTML",
+        disable_web_page_preview: true,
       }),
     });
 
