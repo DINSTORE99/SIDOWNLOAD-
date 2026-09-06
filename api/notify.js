@@ -1,4 +1,4 @@
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8206994792:AAGo26LadC8a86sF9VRiL_Q_S39FCbRMlZQ";
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8311271231:AAHzIXX4OuHchJbMGSXoavBxXkjNQg28U0g";
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "6452266025";
 
 export default async function handler(req, res) {
