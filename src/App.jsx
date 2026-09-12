@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import "./style.css";
 // ==========================================
-// LINK APK
+// 
 // ==========================================
-const APK_LINK = "https://sfile.co"; // Ganti dengan link APK Anda
+const APK_LINK = "https://sfile.co/PXfhrhLw6sk"; 
 
 const PLATFORMS = [
   {
