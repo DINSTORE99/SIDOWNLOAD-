@@ -4,7 +4,7 @@ import "./style.css";
 // ==========================================
 // 
 // ==========================================
-const APK_LINK = "https://sfile.co/SSM659p2LAU"; 
+const APK_LINK = "https://sfile.co/PXfhrhLw6sk"; 
 
 const PLATFORMS = [
   {
@@ -282,6 +282,7 @@ export default function App() {
   const avgRating = reviews.length
     ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
     : "0.0";
+
   return (
     <div className="sidownload-app">
       {/* BANNER MELAYANG DOWNLOAD APK (Otomatis muncul saat web dibuka) */}
@@ -316,7 +317,7 @@ export default function App() {
           </a>
         </div>
       )}
-  
+
       {/* NAVBAR */}
       <nav className="navbar">
         <div className="brand-wrapper">
@@ -488,18 +489,6 @@ export default function App() {
                     <span>↓</span>
                   </a>
                 ))}
-
-                {/* Tombol Unduh APK Tambahan di Hasil */}
-                <a
-                  href={APK_LINK}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="download-link"
-                  style={{ borderColor: "#1ed760", background: "rgba(30, 215, 96, 0.05)", color: "#1ed760" }}
-                >
-                  <span>📱 Download Aplikasi SIDOWNLOAD (APK)</span>
-                  <span>↓</span>
-                </a>
               </div>
 
               <button type="button" className="clear-btn" onClick={clearResult}>
