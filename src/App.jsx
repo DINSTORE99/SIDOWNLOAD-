@@ -4,7 +4,7 @@ import "./style.css";
 // ==========================================
 // 
 // ==========================================
-const APK_LINK = "https://sfile.co/PXfhrhLw6sk"; 
+const APK_LINK = "https://sfile.co/SSM659p2LAU"; 
 
 const PLATFORMS = [
   {
