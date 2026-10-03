@@ -351,6 +351,7 @@ export default function App() {
         </div>
 
         {/* INPUT FORM */}
+                {/* INPUT FORM */}
         <div className="section-header">
           <span className="section-label">DOWNLOAD</span>
           <h3 className="section-title">Masukkan Link</h3>
@@ -387,11 +388,11 @@ export default function App() {
             className="submit-btn"
             disabled={loading || !url.trim()}
           >
-
             {loading ? "Memproses..." : "Download Sekarang"}
           </button>
 
           {error && <div className="msg-error">❌ {error}</div>}
+        </form>
 
           {/* HASIL DOWNLOAD */}
           {result && (
