@@ -270,18 +270,8 @@ export default function App() {
 
   return (
     <div className="sidownload-app">
-      {/* NAVBAR */}
-      <nav className="navbar">
-        <div className="brand-wrapper">
-          <div className="brand-icon">S</div>
-          <div className="brand-text">
-            <h2>SIDOWNLOAD</h2>
-            <span>FAST • SIMPLE • FREE</span>
-          </div>
-        </div>
 
-
-      {/* BANNER MELAYANG DOWNLOAD APK (Muncul otomatis saat web dibuka) */}
+{/* BANNER MELAYANG DOWNLOAD APK (Muncul otomatis saat web dibuka) */}
       {showDownloadBanner && (
         <div style={{
           position: "fixed",
@@ -352,8 +342,18 @@ export default function App() {
 
 
 
-        
 
+
+      
+      {/* NAVBAR */}
+      <nav className="navbar">
+        <div className="brand-wrapper">
+          <div className="brand-icon">S</div>
+          <div className="brand-text">
+            <h2>SIDOWNLOAD</h2>
+            <span>FAST • SIMPLE • FREE</span>
+          </div>
+        </div>      
         {/* PENGUNJUNG DI KANAN ATAS NAVBAR */}
         <div className="visitor-badge-compact" title="Total Pengunjung">
           <span className="visitor-icon">👁️</span>
