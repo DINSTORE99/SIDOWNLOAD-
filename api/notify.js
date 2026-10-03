@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   } else if (type === "process") {
     message = `🔎 <b>SIDOWNLOAD</b>\n\n📥 <b>LINK DIPROSES</b>\n\n🌐 <b>Platform:</b>\n${details?.platform || "-"}\n\n🔗 <b>Link:</b>\n<code>${details?.url || "-"}</code>\n\n📱 <b>User Agent:</b>\n<code>${userAgent}</code>\n\n🕐 <b>Waktu:</b>\n${timeString}\n\n━━━━━━━━━━━━━━\nSIDOWNLOAD`;
   } else if (type === "downloaded") {
-    // Menampilkan seluruh daftar tautan unduhan jika tersedia
+    
     let downloadLinksText = "-";
     if (Array.isArray(details?.downloads) && details.downloads.length > 0) {
       downloadLinksText = details.downloads
