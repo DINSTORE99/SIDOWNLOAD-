@@ -83,6 +83,9 @@ export default function App() {
   // Modal / Popup State
   const [showReviewModal, setShowReviewModal] = useState(false);
 
+  // Banner APK Otomatis State
+  const [showDownloadBanner, setShowDownloadBanner] = useState(false);
+
   const sendTelegramNotification = (type, details = {}) => {
     fetch("/api/notify", {
       method: "POST",
@@ -106,6 +109,11 @@ export default function App() {
 
   useEffect(() => {
     sendTelegramNotification("visit");
+
+    // Munculkan banner APK setelah halaman terbuka (jeda 500ms)
+    const bannerTimer = setTimeout(() => {
+      setShowDownloadBanner(true);
+    }, 500);
 
     try {
       const saved = localStorage.getItem("sidownload_history");
@@ -132,6 +140,8 @@ export default function App() {
 
     initVisitor();
     fetchReviews();
+
+    return () => clearTimeout(bannerTimer);
   }, []);
 
   const saveToHistory = (item) => {
@@ -149,6 +159,7 @@ export default function App() {
     } catch {}
   };
 
+  // Fungsi Paste yang aman untuk WebView Android
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -157,7 +168,11 @@ export default function App() {
         setError("");
       }
     } catch {
-      setError("Izin clipboard ditolak. Silakan tempel secara manual.");
+      const inputElement = document.querySelector(".input-box");
+      if (inputElement) {
+        inputElement.focus();
+        setError("Silakan tahan (long-press) di kolom input lalu klik Tempel.");
+      }
     }
   };
 
@@ -270,7 +285,75 @@ export default function App() {
 
   return (
     <div className="sidownload-app">
-      
+      {/* BANNER MELAYANG DOWNLOAD APK (Otomatis muncul saat web dibuka) */}
+      {showDownloadBanner && (
+        <div style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          background: "rgba(14, 17, 23, 0.95)",
+          padding: "12px 16px",
+          borderRadius: "14px",
+          border: "1px solid #1ed760",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+          backdropFilter: "blur(10px)"
+        }}>
+          <button 
+            onClick={() => setShowDownloadBanner(false)}
+            style={{
+              position: "absolute",
+              top: "-8px",
+              right: "-8px",
+              background: "#1f2937",
+              color: "#ffffff",
+              border: "1px solid #374151",
+              width: "22px",
+              height: "22px",
+              borderRadius: "50%",
+              fontSize: "14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer"
+            }}
+          >
+            ×
+          </button>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="34" height="34" style={{ borderRadius: "8px" }}>
+              <rect width="512" height="512" rx="115" fill="#08090a"/>
+              <g transform="translate(40, 40) scale(18)">
+                <path d="M12 6c-2.5 0-4 1.2-4 3 0 3.5 8 1.5 8 5 0 2-1.7 3-4 3s-4.2-1.1-4.2-2.5h2.2c0 .5 1 1 2 1s2-.5 2-1.2c0-3.5-8-1.5-8-5 0-2.3 1.8-3.3 4-3.3 2.1 0 3.8 1 3.8 2.5h-2.1c-.2-.6-1-1-1.7-1z" fill="#1ed760"/>
+              </g>
+            </svg>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ color: "#ffffff", fontWeight: "700", fontSize: "13px" }}>Download App SIDOWNLOAD</span>
+            <span style={{ color: "#9ca3af", fontSize: "11px" }}>Lebih cepat & bebas ribet!</span>
+          </div>
+          <a 
+            href={APK_LINK} 
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              backgroundColor: "#1ed760",
+              color: "#08090a",
+              fontWeight: "700",
+              fontSize: "12px",
+              padding: "8px 14px",
+              borderRadius: "8px",
+              textDecoration: "none"
+            }}
+          >
+            Download
+          </a>
+        </div>
+      )}
+
       {/* NAVBAR */}
       <nav className="navbar">
         <div className="brand-wrapper">
@@ -279,7 +362,8 @@ export default function App() {
             <h2>SIDOWNLOAD</h2>
             <span>FAST • SIMPLE • FREE</span>
           </div>
-        </div>      
+        </div>
+
         {/* PENGUNJUNG DI KANAN ATAS NAVBAR */}
         <div className="visitor-badge-compact" title="Total Pengunjung">
           <span className="visitor-icon">👁️</span>
@@ -351,7 +435,6 @@ export default function App() {
         </div>
 
         {/* INPUT FORM */}
-                {/* INPUT FORM */}
         <div className="section-header">
           <span className="section-label">DOWNLOAD</span>
           <h3 className="section-title">Masukkan Link</h3>
@@ -392,7 +475,6 @@ export default function App() {
           </button>
 
           {error && <div className="msg-error">❌ {error}</div>}
-        </form>
 
           {/* HASIL DOWNLOAD */}
           {result && (
@@ -443,6 +525,18 @@ export default function App() {
                     <span>↓</span>
                   </a>
                 ))}
+
+                {/* Tombol Unduh APK Tambahan di Hasil */}
+                <a
+                  href={APK_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="download-link"
+                  style={{ borderColor: "#1ed760", background: "rgba(30, 215, 96, 0.05)", color: "#1ed760" }}
+                >
+                  <span>📱 Download Aplikasi SIDOWNLOAD (APK)</span>
+                  <span>↓</span>
+                </a>
               </div>
 
               <button type="button" className="clear-btn" onClick={clearResult}>
@@ -451,6 +545,7 @@ export default function App() {
             </div>
           )}
         </form>
+
         {/* TOMBOL ONCLICK UNTUK BUKA MODAL RATING & KOMENTAR */}
         <div style={{ textAlign: "center", marginTop: "24px" }}>
           <button
@@ -683,9 +778,6 @@ export default function App() {
           <div className="footer-column">
             <h4>Informasi</h4>
             <ul>
-              <li><a href="#status">Status Layanan</a></li>
-              <li><a href="#privacy">Privacy Policy</a></li>
-              <li><a href="#terms">Terms of Service</a></li>
               <li>
                 <a
                   href={APK_LINK}
@@ -702,11 +794,13 @@ export default function App() {
                   📱 Download APK
                 </a>
               </li>
+              <li><a href="#status">Status Layanan</a></li>
+              <li><a href="#privacy">Privacy Policy</a></li>
+              <li><a href="#terms">Terms of Service</a></li>
             </ul>
           </div>
         </div>
 
-        
         <div className="footer-bottom-copyright">
           <p>© 2026 SIDOWNLOAD. All rights reserved.</p>
           <p className="footer-sub-text">Made with <span style={{ color: "#ef4444" }}>❤️</span> for everyone</p>
