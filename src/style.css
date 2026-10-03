@@ -894,3 +894,73 @@ body {
 .footer-sub-text {
   font-size: 11px;
 }
+/* --- FLOATING APK DOWNLOAD BANNER --- */
+.apk-download-banner {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(14, 17, 23, 0.95);
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid #1ed760;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.apk-banner-close {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #1f2937;
+  color: #ffffff;
+  border: 1px solid #374151;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.apk-banner-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apk-banner-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.apk-banner-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.apk-banner-desc {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.apk-banner-btn {
+  background-color: #1ed760;
+  color: #08090a;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: filter 0.2s ease;
+}
+
+.apk-banner-btn:hover {
+  filter: brightness(1.1);
+}
