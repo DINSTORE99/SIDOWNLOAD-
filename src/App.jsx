@@ -282,48 +282,19 @@ export default function App() {
   const avgRating = reviews.length
     ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
     : "0.0";
-
   return (
     <div className="sidownload-app">
       {/* BANNER MELAYANG DOWNLOAD APK (Otomatis muncul saat web dibuka) */}
       {showDownloadBanner && (
-        <div style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          zIndex: 9999,
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          background: "rgba(14, 17, 23, 0.95)",
-          padding: "12px 16px",
-          borderRadius: "14px",
-          border: "1px solid #1ed760",
-          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
-          backdropFilter: "blur(10px)"
-        }}>
+        <div className="apk-download-banner">
           <button 
+            type="button"
+            className="apk-banner-close"
             onClick={() => setShowDownloadBanner(false)}
-            style={{
-              position: "absolute",
-              top: "-8px",
-              right: "-8px",
-              background: "#1f2937",
-              color: "#ffffff",
-              border: "1px solid #374151",
-              width: "22px",
-              height: "22px",
-              borderRadius: "50%",
-              fontSize: "14px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer"
-            }}
           >
             ×
           </button>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="apk-banner-icon-wrapper">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="34" height="34" style={{ borderRadius: "8px" }}>
               <rect width="512" height="512" rx="115" fill="#08090a"/>
               <g transform="translate(40, 40) scale(18)">
@@ -331,29 +302,21 @@ export default function App() {
               </g>
             </svg>
           </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ color: "#ffffff", fontWeight: "700", fontSize: "13px" }}>Download App SIDOWNLOAD</span>
-            <span style={{ color: "#9ca3af", fontSize: "11px" }}>Lebih cepat & bebas ribet!</span>
+          <div className="apk-banner-info">
+            <span className="apk-banner-title">Download App SIDOWNLOAD</span>
+            <span className="apk-banner-desc">Lebih cepat & bebas ribet!</span>
           </div>
           <a 
             href={APK_LINK} 
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              backgroundColor: "#1ed760",
-              color: "#08090a",
-              fontWeight: "700",
-              fontSize: "12px",
-              padding: "8px 14px",
-              borderRadius: "8px",
-              textDecoration: "none"
-            }}
+            className="apk-banner-btn"
           >
             Download
           </a>
         </div>
       )}
-
+  
       {/* NAVBAR */}
       <nav className="navbar">
         <div className="brand-wrapper">
