@@ -280,6 +280,80 @@ export default function App() {
           </div>
         </div>
 
+
+      {/* BANNER MELAYANG DOWNLOAD APK (Muncul otomatis saat web dibuka) */}
+      {showDownloadBanner && (
+        <div style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          background: "rgba(14, 17, 23, 0.95)",
+          padding: "12px 16px",
+          borderRadius: "14px",
+          border: "1px solid #1ed760",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+          backdropFilter: "blur(10px)"
+        }}>
+          <button 
+            onClick={() => setShowDownloadBanner(false)}
+            style={{
+              position: "absolute",
+              top: "-8px",
+              right: "-8px",
+              background: "#1f2937",
+              color: "#ffffff",
+              border: "1px solid #374151",
+              width: "22px",
+              height: "22px",
+              borderRadius: "50%",
+              fontSize: "14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer"
+            }}
+          >
+            ×
+          </button>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="34" height="34" style={{ borderRadius: "8px" }}>
+              <rect width="512" height="512" rx="115" fill="#08090a"/>
+              <g transform="translate(40, 40) scale(18)">
+                <path d="M12 6c-2.5 0-4 1.2-4 3 0 3.5 8 1.5 8 5 0 2-1.7 3-4 3s-4.2-1.1-4.2-2.5h2.2c0 .5 1 1 2 1s2-.5 2-1.2c0-3.5-8-1.5-8-5 0-2.3 1.8-3.3 4-3.3 2.1 0 3.8 1 3.8 2.5h-2.1c-.2-.6-1-1-1.7-1z" fill="#1ed760"/>
+              </g>
+            </svg>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ color: "#ffffff", fontWeight: "700", fontSize: "13px" }}>Download App SIDOWNLOAD</span>
+            <span style={{ color: "#9ca3af", fontSize: "11px" }}>Lebih cepat & bebas ribet!</span>
+          </div>
+          <a 
+            href={APK_LINK} 
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              backgroundColor: "#1ed760",
+              color: "#08090a",
+              fontWeight: "700",
+              fontSize: "12px",
+              padding: "8px 14px",
+              borderRadius: "8px",
+              textDecoration: "none"
+            }}
+          >
+            Download
+          </a>
+        </div>
+      )}
+
+
+
+        
+
         {/* PENGUNJUNG DI KANAN ATAS NAVBAR */}
         <div className="visitor-badge-compact" title="Total Pengunjung">
           <span className="visitor-icon">👁️</span>
