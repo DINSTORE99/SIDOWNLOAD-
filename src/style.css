@@ -1,3 +1,4 @@
+/* --- RESET & GLOBAL STYLE --- */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,18 +7,39 @@
 
 body {
   background-color: #08090a;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
   color: #f1f5f9;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow-x: hidden;
 }
 
-.sidownload-app {
+.sidownload-app,
+.app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  background-color: transparent; /* Membiarkan efek grid body terlihat */
 }
 
-/* NAVBAR */
+/* Efek cahaya neon hijau pudar di latar belakang */
+.app-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(30, 215, 96, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- NAVBAR --- */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -66,7 +88,7 @@ body {
   font-weight: 700;
 }
 
-/* COMPACT VISITOR BADGE (NAVBAR ATAS KANAN) */
+/* --- VISITOR BADGE --- */
 .visitor-badge-compact {
   display: inline-flex;
   align-items: center;
@@ -95,16 +117,17 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* CONTENT CONTAINER */
+/* --- CONTENT CONTAINER --- */
 .content-container {
   flex: 1;
   max-width: 540px;
   width: 100%;
   margin: 0 auto;
   padding: 10px 20px 40px;
+  z-index: 1;
 }
 
-/* HERO SECTION */
+/* --- HERO SECTION --- */
 .hero-section {
   text-align: center;
   margin-top: 15px;
@@ -151,7 +174,7 @@ body {
   padding: 0 20px;
 }
 
-/* MOCKUP & FLOATING ORBIT ICONS */
+/* --- MOCKUP & ORBIT ICONS --- */
 .mockup-container {
   position: relative;
   width: 260px;
@@ -254,7 +277,7 @@ body {
 .orbit-icon.pos-mid-left { bottom: 35px; left: 10px; }
 .orbit-icon.pos-mid-right { bottom: 35px; right: 10px; }
 
-/* SECTIONS */
+/* --- SECTIONS --- */
 .section-header {
   margin-top: 25px;
   margin-bottom: 12px;
@@ -274,7 +297,7 @@ body {
   margin-top: 2px;
 }
 
-/* PLATFORM GRID */
+/* --- PLATFORM GRID --- */
 .platform-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -311,7 +334,7 @@ body {
   color: #cbd5e1;
 }
 
-/* INPUT FORM */
+/* --- INPUT FORM --- */
 .input-card {
   background: #101317;
   border: 1px solid #1c222b;
@@ -409,7 +432,7 @@ body {
   font-size: 11.5px;
 }
 
-/* MEDIA RESULT */
+/* --- MEDIA RESULT --- */
 .result-card {
   margin-top: 15px;
   background: #111419;
@@ -546,7 +569,7 @@ body {
   color: #fff;
 }
 
-/* RIWAYAT UNDUHAN */
+/* --- RIWAYAT UNDUHAN --- */
 .history-section {
   margin-top: 25px;
 }
@@ -632,7 +655,7 @@ body {
   border-color: #1ed760;
 }
 
-/* CARA PENGGUNAAN */
+/* --- CARA PENGGUNAAN --- */
 .instructions-section {
   margin-top: 30px;
 }
@@ -681,7 +704,7 @@ body {
   line-height: 1.45;
 }
 
-/* TOMBOL PEMICU MODAL RATING & KOMENTAR */
+/* --- MODAL & TRIGGER --- */
 .review-trigger-btn {
   background: #111419;
   border: 1px solid #1f2732;
@@ -701,7 +724,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* MODAL OVERLAY POPUP */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -754,7 +776,7 @@ body {
   background: rgba(239, 68, 68, 0.1);
 }
 
-/* FOOTER */
+/* --- FOOTER --- */
 .app-footer-custom {
   width: 100%;
   max-width: 680px;
@@ -764,6 +786,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 28px;
+  z-index: 1;
 }
 
 .footer-brand-section .brand-wrapper {
@@ -871,38 +894,3 @@ body {
 .footer-sub-text {
   font-size: 11px;
 }
-
-
-/* Latar Belakang Kotak-Kotak (Grid Background) */
-.app-container {
-  background-color: #08090a;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 30px 30px; /* Ukuran kotak grid */
-  min-height: 100vh;
-  position: relative;
-}
-
-/* Efek cahaya neon hijau pudar di latar belakang */
-.app-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 500px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(30, 215, 96, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-/* Terapkan langsung ke body atau container utama */
-body, .app-container {
-  background-color: #08090a !important;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px) !important;
-  background-size: 32px 32px !important;
-}
-
