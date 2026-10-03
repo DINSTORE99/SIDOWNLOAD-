@@ -871,3 +871,30 @@ body {
 .footer-sub-text {
   font-size: 11px;
 }
+
+
+/* Latar Belakang Kotak-Kotak (Grid Background) */
+.app-container {
+  background-color: #08090a;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px; /* Ukuran kotak grid */
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Efek cahaya neon hijau pudar di latar belakang */
+.app-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(30, 215, 96, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
