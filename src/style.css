@@ -897,4 +897,12 @@ body {
   pointer-events: none;
   z-index: 0;
 }
+/* Terapkan langsung ke body atau container utama */
+body, .app-container {
+  background-color: #08090a !important;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px) !important;
+  background-size: 32px 32px !important;
+}
 
