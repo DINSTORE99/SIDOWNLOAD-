@@ -567,103 +567,144 @@ else if (platform === "instagram") {
 
   title =
     root?.title ||
+    root?.caption ||
     "Instagram Media";
 
   author =
     root?.username ||
+    root?.author ||
     "";
 
   thumbnail =
     root?.thumbnail ||
     root?.thumb ||
     root?.cover ||
+    root?.image ||
     "";
 
-  // Response baru Siputzx:
-  // data.media = [
-  //   {
-  //     type: "mp4",
-  //     quality: 720,
-  //     label: "720p",
-  //     url: "..."
-  //   }
-  // ]
+  // ==========================================
+  // FORMAT BARU:
+  // data.media[]
+  // ==========================================
 
   if (Array.isArray(root?.media)) {
-    root.media.forEach((media, index) => {
-      if (!media?.url) return;
+    for (const media of root.media) {
+      if (!media) continue;
 
-      const type =
-        String(media.type || "").toLowerCase();
+      const mediaUrl =
+        typeof media === "string"
+          ? media
+          : media?.url;
+
+      if (!mediaUrl) continue;
+
+      const mediaType =
+        String(
+          media?.type ||
+          ""
+        ).toLowerCase();
 
       const label =
-        media.label ||
+        media?.label ||
         (
-          media.quality
+          media?.quality
             ? `${media.quality}p`
             : ""
         );
 
-      // Video
+      // VIDEO
       if (
-        type === "mp4" ||
-        type === "video" ||
-        media.url.includes(".mp4")
+        mediaType === "mp4" ||
+        mediaType === "video" ||
+        mediaUrl.toLowerCase().includes(".mp4")
       ) {
         downloads.push({
-          url: media.url,
-          text:
-            label
-              ? `Download Video (${label})`
-              : `Download Video #${index + 1}`,
+          url: mediaUrl,
+          text: label
+            ? `Download Video (${label})`
+            : "Download Video",
           type: "instagram"
         });
 
-        return;
+        continue;
       }
 
-      // Audio
+      // AUDIO
       if (
-        type === "mp3" ||
-        type === "m4a" ||
-        type === "audio"
+        mediaType === "mp3" ||
+        mediaType === "m4a" ||
+        mediaType === "aac" ||
+        mediaType === "audio"
       ) {
         downloads.push({
-          url: media.url,
-          text:
-            label
-              ? `Download Audio (${label})`
-              : "Download Audio",
+          url: mediaUrl,
+          text: label
+            ? `Download Audio (${label})`
+            : "Download Audio",
           type: "audio"
         });
 
-        return;
+        continue;
       }
 
-      // Media lain
+      // FORMAT LAIN
       downloads.push({
-        url: media.url,
-        text: `Unduh Media #${index + 1}`,
-        type: "instagram"
-      });
-    });
-  }
-
-  // Backup jika API lama mengembalikan URL langsung
-  if (downloads.length === 0) {
-    const igLink =
-      root?.download_url ||
-      root?.download ||
-      root?.video_url ||
-      root?.url;
-
-    if (igLink) {
-      downloads.push({
-        url: igLink,
-        text: "Unduh Media",
+        url: mediaUrl,
+        text: label
+          ? `Download Media (${label})`
+          : "Download Media",
         type: "instagram"
       });
     }
+  }
+
+  // ==========================================
+  // FORMAT LAMA
+  // ==========================================
+
+  if (downloads.length === 0) {
+    const possibleUrls = [
+      root?.download_url,
+      root?.download,
+      root?.video_url,
+      root?.video,
+      root?.url,
+      root?.media_url
+    ];
+
+    for (const url of possibleUrls) {
+      if (!url) continue;
+
+      downloads.push({
+        url,
+        text: "Download Media",
+        type: "instagram"
+      });
+    }
+  }
+
+  // ==========================================
+  // JIKA DATA.MEDIA BERUPA ARRAY NESTED
+  // ==========================================
+
+  if (
+    downloads.length === 0 &&
+    Array.isArray(root)
+  ) {
+    root.forEach((item, index) => {
+      const mediaUrl =
+        typeof item === "string"
+          ? item
+          : item?.url;
+
+      if (!mediaUrl) return;
+
+      downloads.push({
+        url: mediaUrl,
+        text: `Download Media #${index + 1}`,
+        type: "instagram"
+      });
+    });
   }
 }
 
