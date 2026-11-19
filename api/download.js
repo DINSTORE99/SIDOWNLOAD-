@@ -1,15 +1,17 @@
 export const config = {
   maxDuration: 15,
 };
+
 const extractUrl = (text) => {
   if (!text) return "";
 
   const match = String(text).match(/https?:\/\/[^\s]+/i);
-  if (!match) {
-    return String(text).trim();
-  }
 
-  return match[0].replace(/[.,!?;:)\]}]+$/g, "").trim();
+  if (!match) return String(text).trim();
+
+  return match[0]
+    .replace(/[.,!?;:)\]}]+$/g, "")
+    .trim();
 };
 
 const detectPlatform = (rawUrl) => {
@@ -17,15 +19,24 @@ const detectPlatform = (rawUrl) => {
 
   if (!url) return null;
 
-  if (url.includes("instagram.com") || url.includes("instagr.am")) {
+  if (
+    url.includes("instagram.com") ||
+    url.includes("instagr.am")
+  ) {
     return "instagram";
   }
 
-  if (url.includes("facebook.com") || url.includes("fb.watch")) {
+  if (
+    url.includes("facebook.com") ||
+    url.includes("fb.watch")
+  ) {
     return "facebook";
   }
 
-  if (url.includes("tiktok.com") || url.includes("vt.tiktok.com")) {
+  if (
+    url.includes("tiktok.com") ||
+    url.includes("vt.tiktok.com")
+  ) {
     return "tiktok";
   }
 
@@ -67,7 +78,9 @@ const safeFetchJson = async (url, timeoutMs = 8000) => {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Accept: "application/json, text/plain, */*",
+
+        Accept:
+          "application/json, text/plain, */*",
       },
     });
 
@@ -87,63 +100,82 @@ const safeFetchJson = async (url, timeoutMs = 8000) => {
 };
 
 export default async function handler(req, res) {
-  // =========================
-  // CORS
-  // =========================
+  // ==========================================
+  // CORS UNTUK API PUBLIC
+  // ==========================================
 
-  res.setHeader("Content-Type", "application/json");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
+    "Content-Type",
+    "application/json"
   );
 
-  // Preflight request
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "*"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+
+  // OPTIONS / PREFLIGHT
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // =========================
+  // ==========================================
   // METHOD
-  // =========================
+  // ==========================================
 
-  if (req.method !== "GET" && req.method !== "POST") {
+  if (
+    req.method !== "POST" &&
+    req.method !== "GET"
+  ) {
     return res.status(405).json({
       success: false,
-      message: "Metode tidak diizinkan. Gunakan GET atau POST.",
+      message:
+        "Metode tidak diizinkan.",
     });
   }
 
-  // =========================
-  // GET / POST URL
-  // =========================
+  // ==========================================
+  // GET / POST
+  // ==========================================
 
   const rawUrl =
     req.method === "POST"
       ? req.body?.url
       : req.query?.url;
 
-  const cleanUrl = extractUrl(rawUrl);
+  const cleanUrl =
+    extractUrl(rawUrl);
 
   if (!cleanUrl) {
     return res.status(400).json({
       success: false,
-      message: "URL tidak boleh kosong.",
+      message:
+        "URL tidak boleh kosong.",
     });
   }
 
-  // =========================
+  // ==========================================
   // DETECT PLATFORM
-  // =========================
+  // ==========================================
 
-  const platform = detectPlatform(cleanUrl);
+  const platform =
+    detectPlatform(cleanUrl);
 
   if (!platform) {
     return res.status(400).json({
       success: false,
       message:
-        "Platform tidak didukung. Gunakan URL TikTok, YouTube, Instagram, Facebook, CapCut, atau Spotify.",
+        "Platform tidak didukung.",
     });
   }
 
@@ -156,22 +188,24 @@ export default async function handler(req, res) {
 
     const downloads = [];
 
-    const encodedUrl = encodeURIComponent(cleanUrl);
+    const encodedUrl =
+      encodeURIComponent(cleanUrl);
 
-    // =====================================================
+    // ==========================================
     // YOUTUBE
-    // =====================================================
+    // ==========================================
 
     if (platform === "youtube") {
-      const [mp4Data, mp3Data] = await Promise.all([
-        safeFetchJson(
-          `https://api.azbry.com/api/download/ytmp4?url=${encodedUrl}`
-        ),
+      const [mp4Data, mp3Data] =
+        await Promise.all([
+          safeFetchJson(
+            `https://api.azbry.com/api/download/ytmp4?url=${encodedUrl}`
+          ),
 
-        safeFetchJson(
-          `https://api.azbry.com/api/download/ytmp3?url=${encodedUrl}`
-        ),
-      ]);
+          safeFetchJson(
+            `https://api.azbry.com/api/download/ytmp3?url=${encodedUrl}`
+          ),
+        ]);
 
       const validResult =
         mp4Data?.result ||
@@ -192,52 +226,78 @@ export default async function handler(req, res) {
           "";
 
         if (validResult.duration) {
-          const dur = Number(validResult.duration);
+          const dur =
+            Number(
+              validResult.duration
+            );
 
           if (!isNaN(dur)) {
-            const m = Math.floor(dur / 60);
-            const s = dur % 60;
+            const m =
+              Math.floor(dur / 60);
+
+            const s =
+              dur % 60;
 
             duration =
               `${m}:${s < 10 ? "0" : ""}${s}`;
           } else {
             duration =
-              String(validResult.duration);
+              String(
+                validResult.duration
+              );
           }
         }
 
-        if (mp4Data?.result?.download) {
+        if (
+          mp4Data?.result?.download
+        ) {
           downloads.push({
-            url: mp4Data.result.download,
+            url:
+              mp4Data.result.download,
+
             text:
               `Download Video (${mp4Data.result.quality || "MP4"})`,
-            type: "youtube",
+
+            type:
+              "youtube",
           });
         }
 
-        if (mp3Data?.result?.download) {
+        if (
+          mp3Data?.result?.download
+        ) {
           downloads.push({
-            url: mp3Data.result.download,
-            text: "Download Audio (MP3)",
-            type: "audio",
+            url:
+              mp3Data.result.download,
+
+            text:
+              "Download Audio (MP3)",
+
+            type:
+              "audio",
           });
         }
       }
     }
 
-    // =====================================================
+    // ==========================================
     // SPOTIFY
-    // =====================================================
+    // ==========================================
 
-    else if (platform === "spotify") {
-      const spData = await safeFetchJson(
-        `https://api.azbry.com/api/download/spotify?url=${encodedUrl}`
-      );
+    else if (
+      platform === "spotify"
+    ) {
+      const spData =
+        await safeFetchJson(
+          `https://api.azbry.com/api/download/spotify?url=${encodedUrl}`
+        );
 
       if (
         spData &&
-        (spData.downloadLink ||
-          spData.rawLink)
+        (
+          spData.downloadLink ||
+          spData.rawLink
+        )
       ) {
         title =
           spData.title ||
@@ -265,14 +325,17 @@ export default async function handler(req, res) {
       }
     }
 
-    // =====================================================
+    // ==========================================
     // TIKTOK
-    // =====================================================
+    // ==========================================
 
-    else if (platform === "tiktok") {
-      const ttData = await safeFetchJson(
-        `https://api.siputzx.my.id/api/d/tiktok/v2?url=${encodedUrl}`
-      );
+    else if (
+      platform === "tiktok"
+    ) {
+      const ttData =
+        await safeFetchJson(
+          `https://api.siputzx.my.id/api/d/tiktok/v2?url=${encodedUrl}`
+        );
 
       const root =
         ttData?.data ||
@@ -297,13 +360,17 @@ export default async function handler(req, res) {
 
       const stat = [];
 
-      if (root?.play_count) {
+      if (
+        root?.play_count
+      ) {
         stat.push(
           `👁️ ${root.play_count}`
         );
       }
 
-      if (root?.like_count) {
+      if (
+        root?.like_count
+      ) {
         stat.push(
           `❤️ ${root.like_count}`
         );
@@ -320,9 +387,12 @@ export default async function handler(req, res) {
 
       if (videoLink) {
         downloads.push({
-          url: videoLink,
+          url:
+            videoLink,
+
           text:
             "Download Video (No Watermark)",
+
           type:
             "tiktok",
         });
@@ -335,23 +405,29 @@ export default async function handler(req, res) {
 
       if (audioLink) {
         downloads.push({
-          url: audioLink,
+          url:
+            audioLink,
+
           text:
             "Download Audio (MP3)",
+
           type:
             "audio",
         });
       }
     }
 
-    // =====================================================
+    // ==========================================
     // CAPCUT
-    // =====================================================
+    // ==========================================
 
-    else if (platform === "capcut") {
-      const ccData = await safeFetchJson(
-        `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
-      );
+    else if (
+      platform === "capcut"
+    ) {
+      const ccData =
+        await safeFetchJson(
+          `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
+        );
 
       const root =
         ccData?.data ||
@@ -394,14 +470,17 @@ export default async function handler(req, res) {
       }
     }
 
-    // =====================================================
+    // ==========================================
     // FACEBOOK
-    // =====================================================
+    // ==========================================
 
-    else if (platform === "facebook") {
-      const fbData = await safeFetchJson(
-        `https://api.siputzx.my.id/api/d/facebook?url=${encodedUrl}`
-      );
+    else if (
+      platform === "facebook"
+    ) {
+      const fbData =
+        await safeFetchJson(
+          `https://api.siputzx.my.id/api/d/facebook?url=${encodedUrl}`
+        );
 
       const root =
         fbData?.data ||
@@ -475,14 +554,17 @@ export default async function handler(req, res) {
       }
     }
 
-    // =====================================================
+    // ==========================================
     // INSTAGRAM
-    // =====================================================
+    // ==========================================
 
-    else if (platform === "instagram") {
-      const igData = await safeFetchJson(
-        `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
-      );
+    else if (
+      platform === "instagram"
+    ) {
+      const igData =
+        await safeFetchJson(
+          `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
+        );
 
       const root =
         igData?.data ||
@@ -505,7 +587,9 @@ export default async function handler(req, res) {
         root?.author ||
         "";
 
-      if (Array.isArray(root)) {
+      if (
+        Array.isArray(root)
+      ) {
         root.forEach(
           (u, i) => {
             const directUrl =
@@ -549,9 +633,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // =====================================================
-    // REMOVE DUPLICATE DOWNLOADS
-    // =====================================================
+    // ==========================================
+    // REMOVE DUPLICATE
+    // ==========================================
 
     const uniqueDownloads =
       downloads.filter(
@@ -563,27 +647,24 @@ export default async function handler(req, res) {
           ) === index
       );
 
-    // =====================================================
-    // NO RESULT
-    // =====================================================
+    // ==========================================
+    // NO DOWNLOAD
+    // ==========================================
 
     if (
       uniqueDownloads.length === 0
     ) {
       return res.status(404).json({
         success: false,
-        platform,
 
         message:
           "Server penyedia gagal memproses media ini atau link tidak valid.",
-
-        downloads: [],
       });
     }
 
-    // =====================================================
+    // ==========================================
     // SUCCESS
-    // =====================================================
+    // ==========================================
 
     return res.status(200).json({
       success: true,
