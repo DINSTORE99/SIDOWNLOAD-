@@ -498,16 +498,7 @@ export default function App() {
           )}
         </form>
 
-        {/* TOMBOL ONCLICK UNTUK BUKA MODAL RATING & KOMENTAR */}
-        <div style={{ textAlign: "center", marginTop: "24px" }}>
-          <button
-            type="button"
-            className="review-trigger-btn"
-            onClick={() => setShowReviewModal(true)}
-          >
-            ⭐ Beri Rating & Ulasan ({avgRating} / 5 • {reviews.length} Komentar)
-          </button>
-        </div>
+        
 
         {/* RIWAYAT */}
         {history.length > 0 && (
@@ -573,6 +564,19 @@ export default function App() {
         </section>
       </main>
 
+
+
+{/* TOMBOL ONCLICK UNTUK BUKA MODAL RATING & KOMENTAR */}
+        <div style={{ textAlign: "center", marginTop: "24px" }}>
+          <button
+            type="button"
+            className="review-trigger-btn"
+            onClick={() => setShowReviewModal(true)}
+          >
+            ⭐ Beri Rating & Ulasan ({avgRating} / 5 • {reviews.length} Komentar)
+          </button>
+        </div>
+      
       {/* POPUP / MODAL RATING & KOMENTAR */}
       {showReviewModal && (
         <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
