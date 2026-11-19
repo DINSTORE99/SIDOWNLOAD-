@@ -5,7 +5,6 @@ const extractUrl = (text) => {
   if (!text) return "";
 
   const match = String(text).match(/https?:\/\/[^\s]+/i);
-
   if (!match) {
     return String(text).trim();
   }
