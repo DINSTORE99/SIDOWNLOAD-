@@ -555,83 +555,117 @@ export default async function handler(req, res) {
     }
 
     // ==========================================
-    // INSTAGRAM
-    // ==========================================
+// INSTAGRAM
+// ==========================================
 
-    else if (
-      platform === "instagram"
-    ) {
-      const igData =
-        await safeFetchJson(
-          `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
+else if (platform === "instagram") {
+  const igData = await safeFetchJson(
+    `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
+  );
+
+  const root = igData?.data || {};
+
+  title =
+    root?.title ||
+    "Instagram Media";
+
+  author =
+    root?.username ||
+    "";
+
+  thumbnail =
+    root?.thumbnail ||
+    root?.thumb ||
+    root?.cover ||
+    "";
+
+  // Response baru Siputzx:
+  // data.media = [
+  //   {
+  //     type: "mp4",
+  //     quality: 720,
+  //     label: "720p",
+  //     url: "..."
+  //   }
+  // ]
+
+  if (Array.isArray(root?.media)) {
+    root.media.forEach((media, index) => {
+      if (!media?.url) return;
+
+      const type =
+        String(media.type || "").toLowerCase();
+
+      const label =
+        media.label ||
+        (
+          media.quality
+            ? `${media.quality}p`
+            : ""
         );
 
-      const root =
-        igData?.data ||
-        igData ||
-        {};
-
-      thumbnail =
-        root?.thumbnail ||
-        root?.thumb ||
-        root?.cover ||
-        "";
-
-      title =
-        root?.title ||
-        root?.caption ||
-        "Instagram Media";
-
-      author =
-        root?.username ||
-        root?.author ||
-        "";
-
+      // Video
       if (
-        Array.isArray(root)
+        type === "mp4" ||
+        type === "video" ||
+        media.url.includes(".mp4")
       ) {
-        root.forEach(
-          (u, i) => {
-            const directUrl =
-              typeof u === "string"
-                ? u
-                : u?.url;
+        downloads.push({
+          url: media.url,
+          text:
+            label
+              ? `Download Video (${label})`
+              : `Download Video #${index + 1}`,
+          type: "instagram"
+        });
 
-            if (directUrl) {
-              downloads.push({
-                url:
-                  directUrl,
-
-                text:
-                  `Unduh Media #${i + 1}`,
-
-                type:
-                  "instagram",
-              });
-            }
-          }
-        );
-      } else {
-        const igLink =
-          root?.download_url ||
-          root?.download ||
-          root?.video_url ||
-          root?.url;
-
-        if (igLink) {
-          downloads.push({
-            url:
-              igLink,
-
-            text:
-              "Unduh Media",
-
-            type:
-              "instagram",
-          });
-        }
+        return;
       }
+
+      // Audio
+      if (
+        type === "mp3" ||
+        type === "m4a" ||
+        type === "audio"
+      ) {
+        downloads.push({
+          url: media.url,
+          text:
+            label
+              ? `Download Audio (${label})`
+              : "Download Audio",
+          type: "audio"
+        });
+
+        return;
+      }
+
+      // Media lain
+      downloads.push({
+        url: media.url,
+        text: `Unduh Media #${index + 1}`,
+        type: "instagram"
+      });
+    });
+  }
+
+  // Backup jika API lama mengembalikan URL langsung
+  if (downloads.length === 0) {
+    const igLink =
+      root?.download_url ||
+      root?.download ||
+      root?.video_url ||
+      root?.url;
+
+    if (igLink) {
+      downloads.push({
+        url: igLink,
+        text: "Unduh Media",
+        type: "instagram"
+      });
     }
+  }
+}
 
     // ==========================================
     // REMOVE DUPLICATE
