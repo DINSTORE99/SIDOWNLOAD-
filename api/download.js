@@ -1,7 +1,6 @@
 export const config = {
   maxDuration: 15,
 };
-
 const extractUrl = (text) => {
   if (!text) return "";
 
