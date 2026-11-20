@@ -757,6 +757,22 @@ export default function App() {
           </div>
         </div>
 
+{/* API DOCUMENTATION */}
+    <a href="/api-docs" className="api-doc-link">
+      <span className="api-doc-icon">⌘</span>
+
+      <div>
+        <strong>API Documentation</strong>
+        <small>
+          Lihat cara penggunaan API SIDOWNLOAD
+        </small>
+      </div>
+
+      <span className="api-doc-arrow">→</span>
+    </a>
+  </div>
+
+        
         <div className="footer-bottom-copyright">
           <p>© 2026 SIDOWNLOAD. All rights reserved.</p>
           <p className="footer-sub-text">Made with <span style={{ color: "#ef4444" }}>❤️</span> for everyone</p>
