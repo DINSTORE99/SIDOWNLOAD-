@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import "./style.css";
+import Docs from "./d/Docs";
 // ==========================================
 // 
 // ==========================================
@@ -319,23 +320,36 @@ export default function App() {
       )}
 
       {/* NAVBAR */}
-      <nav className="navbar">
-        <div className="brand-wrapper">
-          <div className="brand-icon">S</div>
-          <div className="brand-text">
-            <h2>SIDOWNLOAD</h2>
-            <span>FAST • SIMPLE • FREE</span>
-          </div>
-        </div>
+<nav className="navbar">
+  <div
+    className="brand-wrapper"
+    onClick={() => {
+      window.location.href = "/d";
+    }}
+    style={{ cursor: "pointer" }}
+  >
+    <div className="brand-icon">S</div>
 
-        {/* PENGUNJUNG DI KANAN ATAS NAVBAR */}
-        <div className="visitor-badge-compact" title="Total Pengunjung">
-          <span className="visitor-icon">👁️</span>
-          <span className="visitor-count">
-            {visitorCount !== null ? `${visitorCount.toLocaleString()} dikunjungi` : "..."}
-          </span>
-        </div>
-      </nav>
+    <div className="brand-text">
+      <h2>SIDOWNLOAD</h2>
+      <span>FAST • SIMPLE • FREE</span>
+    </div>
+  </div>
+
+  {/* PENGUNJUNG DI KANAN ATAS NAVBAR */}
+  <div
+    className="visitor-badge-compact"
+    title="Total Pengunjung"
+  >
+    <span className="visitor-icon">👁️</span>
+
+    <span className="visitor-count">
+      {visitorCount !== null
+        ? `${visitorCount.toLocaleString()} dikunjungi`
+        : "..."}
+    </span>
+  </div>
+</nav>
 
       <main className="content-container">
         {/* HERO SECTION */}
