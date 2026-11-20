@@ -64,7 +64,7 @@ const PLATFORMS = [
   },
 ];
 
-export default function App() {
+function MainApp() {
   const [url, setUrl] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -321,13 +321,7 @@ export default function App() {
 
       {/* NAVBAR */}
 <nav className="navbar">
-  <div
-    className="brand-wrapper"
-    onClick={() => {
-      window.location.href = "/d";
-    }}
-    style={{ cursor: "pointer" }}
-  >
+  <div className="brand-wrapper">
     <div className="brand-icon">S</div>
 
     <div className="brand-text">
@@ -336,7 +330,6 @@ export default function App() {
     </div>
   </div>
 
-  {/* PENGUNJUNG DI KANAN ATAS NAVBAR */}
   <div
     className="visitor-badge-compact"
     title="Total Pengunjung"
@@ -790,7 +783,15 @@ export default function App() {
           <p>© 2026 SIDOWNLOAD. All rights reserved.</p>
           <p className="footer-sub-text">Made with <span style={{ color: "#ef4444" }}>❤️</span> for everyone</p>
         </div>
-      </footer>
+            </footer>
     </div>
   );
+}
+
+export default function App() {
+  if (window.location.pathname === "/d") {
+    return <Docs />;
+  }
+
+  return <MainApp />;
 }
