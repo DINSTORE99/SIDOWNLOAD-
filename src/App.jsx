@@ -759,11 +759,11 @@ function MainApp() {
       </a>
     </li>
 
-    <li>
-      <a href="/d">
-        📚 API Documentation
-      </a>
-    </li>
+
+
+
+
+    
 
     <li>
       <a href="#status">Status Layanan</a>
