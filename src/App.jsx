@@ -746,29 +746,45 @@ export default function App() {
           </div>
 
           <div className="footer-column">
-            <h4>Informasi</h4>
-            <ul>
-              <li>
-                <a
-                  href={APK_LINK}
-                  onClick={(e) => {
-                    if (!APK_LINK || APK_LINK === "https://sfile.mobi/xxxxx") {
-                      e.preventDefault();
-                      handleDownloadAPK();
-                    }
-                  }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "#22c55e", fontWeight: "700" }}
-                >
-                  📱 Download APK
-                </a>
-              </li>
-              <li><a href="#status">Status Layanan</a></li>
-              <li><a href="#privacy">Privacy Policy</a></li>
-              <li><a href="#terms">Terms of Service</a></li>
-            </ul>
-          </div>
+  <h4>Informasi</h4>
+
+  <ul>
+    <li>
+      <a
+        href={APK_LINK}
+        onClick={(e) => {
+          if (!APK_LINK || APK_LINK === "https://sfile.mobi/xxxxx") {
+            e.preventDefault();
+            handleDownloadAPK();
+          }
+        }}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "#22c55e", fontWeight: "700" }}
+      >
+        📱 Download APK
+      </a>
+    </li>
+
+    <li>
+      <a href="/d">
+        📚 API Documentation
+      </a>
+    </li>
+
+    <li>
+      <a href="#status">Status Layanan</a>
+    </li>
+
+    <li>
+      <a href="#privacy">Privacy Policy</a>
+    </li>
+
+    <li>
+      <a href="#terms">Terms of Service</a>
+    </li>
+  </ul>
+</div>
         </div>
         <div className="footer-bottom-copyright">
           <p>© 2026 SIDOWNLOAD. All rights reserved.</p>
