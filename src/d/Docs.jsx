@@ -3,37 +3,45 @@ import "./Docs.css";
 
 const API = "https://sidownload.dinn.my.id/api/download";
 
-const EXAMPLE_URLS = {
-  Instagram: "https://www.instagram.com/reel/xxxxx/",
-  TikTok: "https://www.tiktok.com/@username/video/xxxxx",
-  YouTube: "https://www.youtube.com/watch?v=xxxxx",
-  Facebook: "https://www.facebook.com/watch/?v=xxxxx",
-  CapCut: "https://www.capcut.com/tv2/xxxxx/",
-  Spotify: "https://open.spotify.com/track/xxxxx",
-};
+const EXAMPLES = [
+  {
+    name: "Instagram",
+    url: "https://www.instagram.com/reel/xxxxx/",
+  },
+  {
+    name: "TikTok",
+    url: "https://www.tiktok.com/@username/video/xxxxx",
+  },
+  {
+    name: "YouTube",
+    url: "https://www.youtube.com/watch?v=xxxxx",
+  },
+];
 
 export default function Docs() {
-  const [testUrl, setTestUrl] = useState("");
-  const [testing, setTesting] = useState(false);
-  const [apiResult, setApiResult] = useState(null);
-  const [apiError, setApiError] = useState("");
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const testAPI = async () => {
-    if (!testUrl.trim()) {
-      setApiError("Masukkan URL terlebih dahulu.");
-      setApiResult(null);
+  const testApi = async () => {
+    const input = url.trim();
+
+    if (!input) {
+      setError("URL tidak boleh kosong.");
+      setResult(null);
       return;
     }
 
-    setTesting(true);
-    setApiError("");
-    setApiResult(null);
+    setLoading(true);
+    setError("");
+    setResult(null);
     setCopied(false);
 
     try {
       const response = await fetch(
-        `${API}?url=${encodeURIComponent(testUrl.trim())}`
+        `${API}?url=${encodeURIComponent(input)}`
       );
 
       const text = await response.text();
@@ -43,448 +51,569 @@ export default function Docs() {
       try {
         data = JSON.parse(text);
       } catch {
-        throw new Error("Server mengembalikan response yang bukan JSON.");
+        throw new Error("Response API bukan JSON yang valid.");
       }
 
       if (!response.ok || !data.success) {
-        setApiResult(data);
-        setApiError(data.message || "API gagal memproses URL.");
+        setError(
+          data?.message ||
+            `Request gagal dengan status ${response.status}.`
+        );
+
+        setResult(data);
         return;
       }
 
-      setApiResult(data);
-    } catch (error) {
-      setApiError(
-        error.message || "Gagal menghubungi API SIDOWNLOAD."
+      setResult(data);
+    } catch (err) {
+      setError(
+        err?.message ||
+          "Tidak dapat terhubung ke API SIDOWNLOAD."
       );
     } finally {
-      setTesting(false);
+      setLoading(false);
     }
   };
 
-  const copyJSON = async () => {
-    if (!apiResult) return;
+  const copyJson = async () => {
+    if (!result) return;
 
     try {
       await navigator.clipboard.writeText(
-        JSON.stringify(apiResult, null, 2)
+        JSON.stringify(result, null, 2)
       );
 
       setCopied(true);
 
       setTimeout(() => {
         setCopied(false);
-      }, 2000);
+      }, 1500);
     } catch {
       setCopied(false);
     }
   };
 
-  const useExample = (url) => {
-    setTestUrl(url);
-    setApiResult(null);
-    setApiError("");
+  const useExample = (exampleUrl) => {
+    setUrl(exampleUrl);
+    setError("");
+    setResult(null);
+  };
+
+  const clearTest = () => {
+    setUrl("");
+    setResult(null);
+    setError("");
+    setCopied(false);
   };
 
   return (
     <div className="docs-page">
 
-      {/* HEADER */}
-      <header className="docs-header">
-        <div className="docs-brand">
-          <div className="docs-brand-icon">S</div>
+      {/* =========================================
+          HEADER
+      ========================================= */}
+
+      <header className="terminal-header">
+
+        <div className="terminal-brand">
+
+          <div className="terminal-logo">
+            S
+          </div>
 
           <div>
-            <b>SIDOWNLOAD</b>
-            <span>API DOCUMENTATION</span>
+            <div className="terminal-title">
+              SIDOWNLOAD
+            </div>
+
+            <div className="terminal-subtitle">
+              PUBLIC API / DOCUMENTATION
+            </div>
           </div>
+
         </div>
 
         <button
-          className="docs-back"
+          className="terminal-home"
           onClick={() => {
             window.location.href = "/";
           }}
         >
-          ← Home
+          [ HOME ]
         </button>
+
       </header>
 
-      <main className="docs-container">
 
-        {/* INTRO */}
-        <section className="docs-intro">
-          <span className="docs-badge">
-            ● PUBLIC API
-          </span>
+      <main className="terminal-container">
 
-          <h1>
-            SIDOWNLOAD
-            <br />
-            <span>API Documentation</span>
-          </h1>
+        {/* =========================================
+            TERMINAL INFO
+        ========================================= */}
 
-          <p>
-            Gunakan API SIDOWNLOAD untuk website, aplikasi,
-            bot, maupun project kamu sendiri.
-          </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <span className="terminal-bar-title">
+              sidownload@api:~
+            </span>
+
+            <span className="terminal-online">
+              ● ONLINE
+            </span>
+
+          </div>
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+              <span className="green">$</span>
+              <span>sidownload --info</span>
+            </div>
+
+            <div className="terminal-output">
+              SIDOWNLOAD Public API
+              <br />
+              Fast media downloader API
+              <br />
+              No API key required
+              <br />
+              Supported: TikTok / Instagram / Facebook
+              / CapCut / YouTube / Spotify
+            </div>
+
+
+            <div className="terminal-line">
+              <span className="green">$</span>
+              <span>endpoint</span>
+            </div>
+
+            <div className="terminal-command">
+              GET {API}?url=LINK
+            </div>
+
+          </div>
+
         </section>
 
-        {/* API PLAYGROUND */}
-        <section className="docs-card api-playground">
 
-          <div className="docs-title">
-            <small>00</small>
+        {/* =========================================
+            API TESTER
+        ========================================= */}
 
-            <div>
-              <h2>Test API</h2>
-              <p>
-                Coba endpoint SIDOWNLOAD langsung dari halaman ini.
-              </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+
+            <span className="terminal-bar-title">
+              api-tester
+            </span>
+
           </div>
 
-          <div className="api-status">
-            <span className="api-status-dot"></span>
-            API Endpoint Aktif
-          </div>
 
-          <div className="test-input-wrapper">
+          <div className="terminal-body">
 
-            <input
-              type="text"
-              value={testUrl}
-              onChange={(e) => {
-                setTestUrl(e.target.value);
-                setApiError("");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  testAPI();
-                }
-              }}
-              placeholder="Tempel URL TikTok, Instagram, YouTube, dll..."
-            />
+            <div className="terminal-line">
+              <span className="green">$</span>
+              <span>
+                sidownload --test
+              </span>
+            </div>
+
+
+            <div className="terminal-input-line">
+
+              <span className="prompt">
+                &gt;
+              </span>
+
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  setError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !loading) {
+                    testApi();
+                  }
+                }}
+                placeholder="paste media URL here..."
+                spellCheck="false"
+                autoComplete="off"
+              />
+
+            </div>
+
+
+            <div className="example-section">
+
+              <div className="example-title">
+                EXAMPLES
+              </div>
+
+              <div className="example-buttons">
+
+                {EXAMPLES.map((example) => (
+                  <button
+                    key={example.name}
+                    type="button"
+                    onClick={() => useExample(example.url)}
+                  >
+                    {example.name}
+                  </button>
+                ))}
+
+              </div>
+
+            </div>
+
 
             <button
-              type="button"
-              onClick={testAPI}
-              disabled={testing || !testUrl.trim()}
+              className="terminal-execute"
+              onClick={testApi}
+              disabled={loading}
             >
-              {testing ? "Memproses..." : "Test API"}
+              {loading
+                ? "[ PROCESSING... ]"
+                : "[ EXECUTE ]"}
             </button>
 
-          </div>
 
-          {/* CONTOH URL */}
-          <div className="example-label">
-            Contoh URL
-          </div>
-
-          <div className="example-buttons">
-            {Object.entries(EXAMPLE_URLS).map(([name, value]) => (
+            {url && !loading && (
               <button
-                key={name}
-                type="button"
-                onClick={() => useExample(value)}
+                className="terminal-clear"
+                onClick={clearTest}
               >
-                {name}
+                [ CLEAR ]
               </button>
-            ))}
-          </div>
+            )}
 
-          {/* ERROR */}
-          {apiError && (
-            <div className="api-error">
-              <strong>Request gagal</strong>
-              <span>{apiError}</span>
-            </div>
-          )}
 
-          {/* JSON RESULT */}
-          {apiResult && (
-            <div className="test-result">
+            {error && (
+              <div className="terminal-error">
 
-              <div className="result-top">
+                <span className="error-icon">
+                  ✕
+                </span>
+
                 <div>
-                  <span className="result-label">
-                    RESPONSE
-                  </span>
-
-                  <h3>
-                    {apiResult.success
-                      ? "API berhasil"
-                      : "API gagal"}
-                  </h3>
-                </div>
-
-                <button
-                  type="button"
-                  className="copy-json-btn"
-                  onClick={copyJSON}
-                >
-                  {copied ? "✓ Copied" : "Copy JSON"}
-                </button>
-              </div>
-
-              {/* DETAIL */}
-              {apiResult.success && (
-                <div className="api-result-info">
-
-                  <div>
-                    <span>Platform</span>
-                    <b>
-                      {apiResult.platform || "-"}
-                    </b>
-                  </div>
-
-                  <div>
-                    <span>Title</span>
-                    <b>
-                      {apiResult.title || "-"}
-                    </b>
-                  </div>
-
-                  {apiResult.author && (
-                    <div>
-                      <span>Author</span>
-                      <b>
-                        {apiResult.author}
-                      </b>
-                    </div>
-                  )}
-
-                  {apiResult.duration && (
-                    <div>
-                      <span>Duration</span>
-                      <b>
-                        {apiResult.duration}
-                      </b>
-                    </div>
-                  )}
-
-                </div>
-              )}
-
-              {/* DOWNLOAD OPTIONS */}
-              {apiResult.success &&
-                Array.isArray(apiResult.downloads) &&
-                apiResult.downloads.length > 0 && (
-                  <div className="api-downloads">
-
-                    <div className="example-label">
-                      Download Options
-                    </div>
-
-                    {apiResult.downloads.map(
-                      (item, index) => (
-                        <a
-                          key={`${item.url}-${index}`}
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="api-download-item"
-                        >
-                          <div>
-                            <strong>
-                              {item.text ||
-                                `Download #${index + 1}`}
-                            </strong>
-
-                            <span>
-                              {item.type || "media"}
-                            </span>
-                          </div>
-
-                          <span>↓</span>
-                        </a>
-                      )
-                    )}
-
-                  </div>
-                )}
-
-              {/* JSON */}
-              <div className="json-result">
-
-                <div className="json-header">
-                  <span>JSON RESPONSE</span>
+                  <strong>
+                    Request failed
+                  </strong>
 
                   <span>
-                    application/json
+                    {error}
                   </span>
                 </div>
 
-                <pre>
-                  {JSON.stringify(
-                    apiResult,
-                    null,
-                    2
-                  )}
-                </pre>
+              </div>
+            )}
+
+          </div>
+
+        </section>
+
+
+        {/* =========================================
+            REQUEST INFO
+        ========================================= */}
+
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <span className="terminal-bar-title">
+              request
+            </span>
+
+          </div>
+
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+              <span className="green">$</span>
+              <span>
+                cat request.txt
+              </span>
+            </div>
+
+
+            <div className="request-block">
+
+              <div className="request-row">
+                <span className="request-key">
+                  METHOD
+                </span>
+
+                <span className="request-value green">
+                  GET
+                </span>
+              </div>
+
+
+              <div className="request-row">
+
+                <span className="request-key">
+                  ENDPOINT
+                </span>
+
+                <span className="request-value">
+                  /api/download
+                </span>
+
+              </div>
+
+
+              <div className="request-row">
+
+                <span className="request-key">
+                  PARAMETER
+                </span>
+
+                <span className="request-value">
+                  url
+                </span>
+
+              </div>
+
+
+              <div className="request-row">
+
+                <span className="request-key">
+                  AUTH
+                </span>
+
+                <span className="request-value green">
+                  NONE
+                </span>
 
               </div>
 
             </div>
+
+          </div>
+
+        </section>
+
+
+        {/* =========================================
+            JSON RESULT
+        ========================================= */}
+
+        {result && (
+          <section className="terminal-window">
+
+            <div className="terminal-bar">
+
+              <div className="terminal-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+
+              <span className="terminal-bar-title">
+                response.json
+              </span>
+
+              <span
+                className={
+                  result.success
+                    ? "terminal-success"
+                    : "terminal-failed"
+                }
+              >
+                {result.success
+                  ? "200 OK"
+                  : "ERROR"}
+              </span>
+
+            </div>
+
+
+            <div className="terminal-body">
+
+              <div className="terminal-line result-command">
+
+                <span className="green">
+                  $
+                </span>
+
+                <span>
+                  cat response.json
+                </span>
+
+                <button
+                  className="copy-json"
+                  onClick={copyJson}
+                >
+                  {copied
+                    ? "[ COPIED ]"
+                    : "[ COPY ]"}
+                </button>
+
+              </div>
+
+
+              <pre className="terminal-json">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+
+            </div>
+
+          </section>
+        )}
+
+
+        {/* =========================================
+            DOWNLOAD RESULTS
+        ========================================= */}
+
+        {result?.success &&
+          Array.isArray(result?.downloads) &&
+          result.downloads.length > 0 && (
+
+            <section className="terminal-window">
+
+              <div className="terminal-bar">
+
+                <div className="terminal-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+
+                <span className="terminal-bar-title">
+                  downloads
+                </span>
+
+              </div>
+
+
+              <div className="terminal-body">
+
+                <div className="terminal-line">
+
+                  <span className="green">
+                    $
+                  </span>
+
+                  <span>
+                    ls -la downloads
+                  </span>
+
+                </div>
+
+
+                <div className="terminal-downloads">
+
+                  {result.downloads.map(
+                    (item, index) => (
+
+                      <a
+                        key={`${item.url}-${index}`}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="terminal-download-item"
+                      >
+
+                        <span className="download-number">
+                          [{index + 1}]
+                        </span>
+
+                        <div className="download-info">
+
+                          <strong>
+                            {item.text ||
+                              "Download Media"}
+                          </strong>
+
+                          <span>
+                            {item.type ||
+                              "media"}
+                          </span>
+
+                        </div>
+
+                        <span className="download-arrow">
+                          →
+                        </span>
+
+                      </a>
+
+                    )
+                  )}
+
+                </div>
+
+              </div>
+
+            </section>
+
           )}
 
-        </section>
 
-        {/* ENDPOINT */}
-        <section className="docs-card">
+        {/* =========================================
+            JAVASCRIPT
+        ========================================= */}
 
-          <div className="docs-title">
-            <small>01</small>
-            <div>
-              <h2>API Endpoint</h2>
-              <p>
-                Endpoint utama untuk memproses link media.
-              </p>
-            </div>
-          </div>
+        <section className="terminal-window">
 
-          <div className="endpoint">
-            <strong>GET</strong>
-            <code>{API}?url=LINK</code>
-          </div>
+          <div className="terminal-bar">
 
-          <div className="note">
-            <b>Tanpa API Key</b>
-
-            <span>
-              API dapat digunakan langsung tanpa authentication.
-            </span>
-          </div>
-
-        </section>
-
-        {/* PARAMETER */}
-        <section className="docs-card">
-
-          <div className="docs-title">
-            <small>02</small>
-
-            <div>
-              <h2>Parameter</h2>
-              <p>
-                Parameter yang diperlukan oleh API.
-              </p>
-            </div>
-          </div>
-
-          <div className="parameter">
-
-            <code>url</code>
-
-            <div>
-              <b>String</b>
-
-              <p>
-                URL media yang ingin diproses.
-              </p>
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
 
-            <span className="required">
-              REQUIRED
+            <span className="terminal-bar-title">
+              javascript.js
             </span>
 
           </div>
 
-        </section>
 
-        {/* REQUEST */}
-        <section className="docs-card">
+          <div className="terminal-body">
 
-          <div className="docs-title">
-            <small>03</small>
+            <div className="terminal-line">
 
-            <div>
-              <h2>Contoh Request</h2>
-              <p>
-                Contoh request menggunakan GET.
-              </p>
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                cat javascript.js
+              </span>
+
             </div>
-          </div>
 
-          <div className="code">
-            <pre>{`GET ${API}?url=https%3A%2F%2Fwww.instagram.com%2Freel%2Fxxxxx%2F`}</pre>
-          </div>
 
-        </section>
-
-        {/* JSON */}
-        <section className="docs-card">
-
-          <div className="docs-title">
-            <small>04</small>
-
-            <div>
-              <h2>JSON Response</h2>
-              <p>
-                Format response ketika request berhasil.
-              </p>
-            </div>
-          </div>
-
-          <div className="code">
-            <pre>{`{
-  "success": true,
-  "platform": "instagram",
-  "title": "Judul media",
-  "thumbnail": "",
-  "author": "username",
-  "duration": "",
-  "stats": "",
-  "downloads": [
-    {
-      "url": "https://example.com/video.mp4",
-      "text": "Download Video (720p)",
-      "type": "instagram"
-    }
-  ]
-}`}</pre>
-          </div>
-
-        </section>
-
-        {/* DOWNLOADS */}
-        <section className="docs-card">
-
-          <div className="docs-title">
-            <small>05</small>
-
-            <div>
-              <h2>Downloads</h2>
-              <p>
-                Hasil download terdapat di dalam array downloads.
-              </p>
-            </div>
-          </div>
-
-          <div className="code">
-            <pre>{`data.downloads.forEach((item) => {
-  console.log(item.url);
-});`}</pre>
-          </div>
-
-        </section>
-
-        {/* JAVASCRIPT */}
-        <section className="docs-card">
-
-          <div className="docs-title">
-            <small>06</small>
-
-            <div>
-              <h2>JavaScript</h2>
-              <p>
-                Contoh penggunaan menggunakan fetch.
-              </p>
-            </div>
-          </div>
-
-          <div className="code">
-            <pre>{`const url =
+            <pre className="terminal-code">
+{`const url =
   "https://www.instagram.com/reel/xxxxx/";
 
 const response = await fetch(
@@ -494,40 +623,52 @@ const response = await fetch(
 
 const data = await response.json();
 
-if (data.success) {
+console.log(data);`}
+            </pre>
 
-  console.log("Judul:", data.title);
-
-  data.downloads.forEach((item) => {
-    console.log(item.text);
-    console.log(item.url);
-  });
-
-} else {
-
-  console.log(data.message);
-
-}`}</pre>
           </div>
 
         </section>
 
-        {/* NODE */}
-        <section className="docs-card">
 
-          <div className="docs-title">
-            <small>07</small>
+        {/* =========================================
+            NODE JS
+        ========================================= */}
 
-            <div>
-              <h2>Node.js</h2>
-              <p>
-                Contoh integrasi Node.js.
-              </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+
+            <span className="terminal-bar-title">
+              node.js
+            </span>
+
           </div>
 
-          <div className="code">
-            <pre>{`async function download(url) {
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                cat node.js
+              </span>
+
+            </div>
+
+
+            <pre className="terminal-code">
+{`async function download(url) {
 
   const api =
     "${API}?url=" +
@@ -536,37 +677,59 @@ if (data.success) {
   const response =
     await fetch(api);
 
-  const data =
-    await response.json();
-
-  return data;
+  return await response.json();
 }
 
 const result = await download(
   "https://www.instagram.com/reel/xxxxx/"
 );
 
-console.log(result);`}</pre>
+console.log(result);`}
+            </pre>
+
           </div>
 
         </section>
 
-        {/* PYTHON */}
-        <section className="docs-card">
 
-          <div className="docs-title">
-            <small>08</small>
+        {/* =========================================
+            PYTHON
+        ========================================= */}
 
-            <div>
-              <h2>Python</h2>
-              <p>
-                Contoh menggunakan requests.
-              </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+
+            <span className="terminal-bar-title">
+              python.py
+            </span>
+
           </div>
 
-          <div className="code">
-            <pre>{`import requests
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                cat python.py
+              </span>
+
+            </div>
+
+
+            <pre className="terminal-code">
+{`import requests
 
 url = "https://www.instagram.com/reel/xxxxx/"
 
@@ -579,31 +742,52 @@ response = requests.get(
 
 data = response.json()
 
-print(data)
+print(data)`}
+            </pre>
 
-if data["success"]:
-    for item in data["downloads"]:
-        print(item["url"])`}</pre>
           </div>
 
         </section>
 
-        {/* PHP */}
-        <section className="docs-card">
 
-          <div className="docs-title">
-            <small>09</small>
+        {/* =========================================
+            PHP
+        ========================================= */}
 
-            <div>
-              <h2>PHP</h2>
-              <p>
-                Contoh request menggunakan PHP.
-              </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+
+            <span className="terminal-bar-title">
+              php.php
+            </span>
+
           </div>
 
-          <div className="code">
-            <pre>{`<?php
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                cat php.php
+              </span>
+
+            </div>
+
+
+            <pre className="terminal-code">
+{`<?php
 
 $url =
   "https://www.instagram.com/reel/xxxxx/";
@@ -620,47 +804,97 @@ $data =
 
 print_r($data);
 
-?>`}</pre>
+?>`}
+            </pre>
+
           </div>
 
         </section>
 
-        {/* CURL */}
-        <section className="docs-card">
 
-          <div className="docs-title">
-            <small>10</small>
+        {/* =========================================
+            CURL
+        ========================================= */}
 
-            <div>
-              <h2>cURL</h2>
-              <p>
-                Request langsung melalui terminal.
-              </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+
+            <span className="terminal-bar-title">
+              curl
+            </span>
+
           </div>
 
-          <div className="code">
-            <pre>{`curl "${API}?url=https%3A%2F%2Fwww.instagram.com%2Freel%2Fxxxxx%2F"`}</pre>
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                curl --request
+              </span>
+
+            </div>
+
+
+            <pre className="terminal-code">
+{`curl "${API}?url=https%3A%2F%2Fwww.instagram.com%2Freel%2Fxxxxx%2F"`}
+            </pre>
+
           </div>
 
         </section>
 
-        {/* BOT */}
-        <section className="docs-card">
 
-          <div className="docs-title">
-            <small>11</small>
+        {/* =========================================
+            BOT
+        ========================================= */}
 
-            <div>
-              <h2>Integrasi Bot</h2>
-              <p>
-                Gunakan API untuk membuat downloader bot.
-              </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+
+            <span className="terminal-bar-title">
+              bot-integration
+            </span>
+
           </div>
 
-          <div className="code">
-            <pre>{`const api =
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                cat bot.js
+              </span>
+
+            </div>
+
+
+            <pre className="terminal-code">
+{`const api =
   "${API}?url=" +
   encodeURIComponent(url);
 
@@ -681,93 +915,175 @@ for (const item of data.downloads) {
     item.url
   );
 
-}`}</pre>
+}`}
+            </pre>
+
           </div>
 
         </section>
 
-        {/* ERROR */}
-        <section className="docs-card">
 
-          <div className="docs-title">
-            <small>12</small>
+        {/* =========================================
+            ERROR RESPONSE
+        ========================================= */}
 
-            <div>
-              <h2>Error Response</h2>
-              <p>
-                Response ketika request gagal.
-              </p>
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+
+            <span className="terminal-bar-title">
+              errors
+            </span>
+
           </div>
 
-          <div className="code">
-            <pre>{`{
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                cat error.json
+              </span>
+
+            </div>
+
+
+            <pre className="terminal-json">
+{`{
   "success": false,
   "message": "URL tidak boleh kosong."
-}`}</pre>
-          </div>
+}`}
+            </pre>
 
-          <p className="error-tip">
-            Selalu periksa <code>success</code> sebelum
-            menggunakan hasil API.
-          </p>
 
-        </section>
-
-        {/* PLATFORM */}
-        <section className="docs-card">
-
-          <div className="docs-title">
-            <small>13</small>
-
-            <div>
-              <h2>Platform</h2>
-              <p>
-                Platform yang tersedia pada API.
-              </p>
+            <div className="terminal-tip">
+              Always check
+              <span> success </span>
+              before using the API response.
             </div>
-          </div>
 
-          <div className="platforms">
-            <div>🎵 TikTok</div>
-            <div>📸 Instagram</div>
-            <div>▶️ YouTube</div>
-            <div>📘 Facebook</div>
-            <div>✂️ CapCut</div>
-            <div>🎧 Spotify</div>
           </div>
 
         </section>
 
-        {/* FOOTER */}
-        <footer className="docs-footer">
 
-          <div className="docs-brand">
-            <div className="docs-brand-icon">
-              S
+        {/* =========================================
+            PLATFORM
+        ========================================= */}
+
+        <section className="terminal-window">
+
+          <div className="terminal-bar">
+
+            <div className="terminal-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
 
-            <div>
-              <b>SIDOWNLOAD</b>
-              <span>FAST • SIMPLE • FREE</span>
-            </div>
+            <span className="terminal-bar-title">
+              supported-platforms
+            </span>
+
           </div>
 
-          <p>
-            SIDOWNLOAD Public API
-          </p>
+
+          <div className="terminal-body">
+
+            <div className="terminal-line">
+
+              <span className="green">
+                $
+              </span>
+
+              <span>
+                sidownload --platforms
+              </span>
+
+            </div>
+
+
+            <div className="platform-terminal-list">
+
+              <div>
+                <span>01</span>
+                TikTok
+              </div>
+
+              <div>
+                <span>02</span>
+                Instagram
+              </div>
+
+              <div>
+                <span>03</span>
+                Facebook
+              </div>
+
+              <div>
+                <span>04</span>
+                CapCut
+              </div>
+
+              <div>
+                <span>05</span>
+                YouTube
+              </div>
+
+              <div>
+                <span>06</span>
+                Spotify
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* =========================================
+            FOOTER
+        ========================================= */}
+
+        <footer className="terminal-footer">
+
+          <div>
+
+            <span className="green">
+              SIDOWNLOAD
+            </span>
+
+            <span>
+              {" "}Public API
+            </span>
+
+          </div>
+
 
           <button
             onClick={() => {
               window.location.href = "/";
             }}
           >
-            ← Kembali ke SIDOWNLOAD
+            [ ← HOME ]
           </button>
 
         </footer>
 
       </main>
+
     </div>
   );
 }
