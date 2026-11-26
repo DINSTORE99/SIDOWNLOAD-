@@ -2,18 +2,16 @@ export const config = {
   maxDuration: 15,
 };
 
-// ======================================================
-// API KEY SYSTEM
-// ======================================================
+import keyStore from "../lib/keyStore.js";
 
-const getApiKeys = () => {
-  const raw = process.env.API_KEYS || "";
+const {
+  getAllKeys,
+  touchKey,
+} = keyStore;
 
-  return raw
-    .split(",")
-    .map((key) => key.trim())
-    .filter(Boolean);
-};
+// ======================================================
+// API KEY SYSTEM — UPSTASH REDIS
+// ======================================================
 
 const getRequestApiKey = (req) => {
   const headerKey =
@@ -35,20 +33,23 @@ const getRequestApiKey = (req) => {
     queryKey ||
     bodyKey ||
     ""
-  ).trim();
+  )
+    .trim();
 };
 
-const checkApiKey = (req) => {
-  const apiKeys = getApiKeys();
+const getRequestUserId = (req) => {
+  return (
+    req.headers?.["x-user-id"] ||
+    req.headers?.["X-User-ID"] ||
+    req.query?.userId ||
+    req.query?.user_id ||
+    req.body?.userId ||
+    req.body?.user_id ||
+    null
+  );
+};
 
-  if (apiKeys.length === 0) {
-    return {
-      valid: false,
-      status: 500,
-      message: "API_KEYS belum dikonfigurasi di server.",
-    };
-  }
-
+const checkApiKey = async (req) => {
   const requestKey =
     getRequestApiKey(req);
 
@@ -60,17 +61,61 @@ const checkApiKey = (req) => {
     };
   }
 
-  if (!apiKeys.includes(requestKey)) {
+  const keys =
+    await getAllKeys();
+
+  const item =
+    keys[requestKey];
+
+  if (!item) {
     return {
       valid: false,
       status: 401,
-      message: "API key tidak valid atau sudah dihapus.",
+      message:
+        "API key tidak valid atau sudah dihapus.",
+    };
+  }
+
+  // Hanya key ACTIVE yang boleh digunakan
+  if (item.status !== "active") {
+    return {
+      valid: false,
+      status: 401,
+      message:
+        "API key tidak aktif atau sudah direvoke.",
+    };
+  }
+
+  const userId =
+    getRequestUserId(req);
+
+  /*
+   * Jika request mengirim userId,
+   * pastikan key memang milik user tersebut.
+   *
+   * Kalau userId tidak dikirim, key tetap
+   * bisa digunakan sebagai API credential.
+   */
+
+  if (
+    userId !== null &&
+    item.userId !== null &&
+    String(item.userId) !==
+      String(userId)
+  ) {
+    return {
+      valid: false,
+      status: 403,
+      message:
+        "API key bukan milik user ini.",
     };
   }
 
   return {
     valid: true,
     key: requestKey,
+    item,
+    userId,
   };
 };
 
@@ -165,9 +210,10 @@ const safeFetchJson = async (
   const controller =
     new AbortController();
 
-  const timer = setTimeout(() => {
-    controller.abort();
-  }, timeoutMs);
+  const timer =
+    setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
 
   try {
     const response =
@@ -228,7 +274,7 @@ export default async function handler(
 
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, X-API-Key"
+    "Content-Type, X-API-Key, X-User-ID"
   );
 
   // ====================================================
@@ -258,15 +304,31 @@ export default async function handler(
   // API KEY
   // ====================================================
 
-  const keyCheck =
-    checkApiKey(req);
+  let keyCheck;
+
+  try {
+    keyCheck =
+      await checkApiKey(req);
+  } catch (error) {
+    console.error(
+      "API KEY REDIS ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Sistem API key sedang mengalami gangguan.",
+    });
+  }
 
   if (!keyCheck.valid) {
     return res.status(
       keyCheck.status
     ).json({
       success: false,
-      message: keyCheck.message,
+      message:
+        keyCheck.message,
     });
   }
 
@@ -302,6 +364,34 @@ export default async function handler(
       success: false,
       message:
         "Platform tidak didukung.",
+    });
+  }
+
+  /*
+   * Tandai API key sebagai digunakan.
+   *
+   * Ini juga memperbarui:
+   * - lastUsed
+   * - uses
+   *
+   * sehingga status ONLINE bisa dihitung
+   * berdasarkan ONLINE_TTL_SECONDS.
+   */
+  try {
+    await touchKey(
+      keyCheck.key,
+      keyCheck.userId
+    );
+  } catch (error) {
+    console.error(
+      "TOUCH API KEY ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Gagal memperbarui status API key.",
     });
   }
 
@@ -759,7 +849,6 @@ export default async function handler(
                 : ""
             );
 
-          // VIDEO
           if (
             mediaType === "mp4" ||
             mediaType === "video" ||
@@ -783,7 +872,6 @@ export default async function handler(
             continue;
           }
 
-          // AUDIO
           if (
             mediaType === "mp3" ||
             mediaType === "m4a" ||
@@ -806,7 +894,6 @@ export default async function handler(
             continue;
           }
 
-          // FORMAT LAIN
           downloads.push({
             url:
               mediaUrl,
