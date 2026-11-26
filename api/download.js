@@ -2,20 +2,109 @@ export const config = {
   maxDuration: 15,
 };
 
+// ======================================================
+// API KEY SYSTEM
+// ======================================================
+
+const getApiKeys = () => {
+  const raw = process.env.API_KEYS || "";
+
+  return raw
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+};
+
+const getRequestApiKey = (req) => {
+  const headerKey =
+    req.headers?.["x-api-key"] ||
+    req.headers?.["X-API-Key"];
+
+  const queryKey =
+    req.query?.apikey ||
+    req.query?.api_key ||
+    req.query?.key;
+
+  const bodyKey =
+    req.body?.apikey ||
+    req.body?.api_key ||
+    req.body?.key;
+
+  return (
+    headerKey ||
+    queryKey ||
+    bodyKey ||
+    ""
+  ).trim();
+};
+
+const checkApiKey = (req) => {
+  const apiKeys = getApiKeys();
+
+  if (apiKeys.length === 0) {
+    return {
+      valid: false,
+      status: 500,
+      message: "API_KEYS belum dikonfigurasi di server.",
+    };
+  }
+
+  const requestKey =
+    getRequestApiKey(req);
+
+  if (!requestKey) {
+    return {
+      valid: false,
+      status: 401,
+      message: "API key diperlukan.",
+    };
+  }
+
+  if (!apiKeys.includes(requestKey)) {
+    return {
+      valid: false,
+      status: 401,
+      message: "API key tidak valid atau sudah dihapus.",
+    };
+  }
+
+  return {
+    valid: true,
+    key: requestKey,
+  };
+};
+
+// ======================================================
+// EXTRACT URL
+// ======================================================
+
 const extractUrl = (text) => {
   if (!text) return "";
 
-  const match = String(text).match(/https?:\/\/[^\s]+/i);
+  const match =
+    String(text).match(
+      /https?:\/\/[^\s]+/i
+    );
 
-  if (!match) return String(text).trim();
+  if (!match) {
+    return String(text).trim();
+  }
 
   return match[0]
-    .replace(/[.,!?;:)\]}]+$/g, "")
+    .replace(
+      /[.,!?;:)\]}]+$/g,
+      ""
+    )
     .trim();
 };
 
+// ======================================================
+// DETECT PLATFORM
+// ======================================================
+
 const detectPlatform = (rawUrl) => {
-  const url = extractUrl(rawUrl).toLowerCase();
+  const url =
+    extractUrl(rawUrl).toLowerCase();
 
   if (!url) return null;
 
@@ -65,28 +154,39 @@ const detectPlatform = (rawUrl) => {
   return null;
 };
 
-const safeFetchJson = async (url, timeoutMs = 8000) => {
-  const controller = new AbortController();
+// ======================================================
+// SAFE FETCH JSON
+// ======================================================
+
+const safeFetchJson = async (
+  url,
+  timeoutMs = 8000
+) => {
+  const controller =
+    new AbortController();
 
   const timer = setTimeout(() => {
     controller.abort();
   }, timeoutMs);
 
   try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    const response =
+      await fetch(url, {
+        signal: controller.signal,
 
-        Accept:
-          "application/json, text/plain, */*",
-      },
-    });
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+
+          Accept:
+            "application/json, text/plain, */*",
+        },
+      });
 
     clearTimeout(timer);
 
-    const text = await response.text();
+    const text =
+      await response.text();
 
     try {
       return JSON.parse(text);
@@ -99,10 +199,17 @@ const safeFetchJson = async (url, timeoutMs = 8000) => {
   }
 };
 
-export default async function handler(req, res) {
-  // ==========================================
-  // CORS UNTUK API PUBLIC
-  // ==========================================
+// ======================================================
+// MAIN HANDLER
+// ======================================================
+
+export default async function handler(
+  req,
+  res
+) {
+  // ====================================================
+  // CORS
+  // ====================================================
 
   res.setHeader(
     "Content-Type",
@@ -121,17 +228,20 @@ export default async function handler(req, res) {
 
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type"
+    "Content-Type, X-API-Key"
   );
 
-  // OPTIONS / PREFLIGHT
+  // ====================================================
+  // PREFLIGHT
+  // ====================================================
+
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // ==========================================
+  // ====================================================
   // METHOD
-  // ==========================================
+  // ====================================================
 
   if (
     req.method !== "POST" &&
@@ -144,9 +254,25 @@ export default async function handler(req, res) {
     });
   }
 
-  // ==========================================
-  // GET / POST
-  // ==========================================
+  // ====================================================
+  // API KEY
+  // ====================================================
+
+  const keyCheck =
+    checkApiKey(req);
+
+  if (!keyCheck.valid) {
+    return res.status(
+      keyCheck.status
+    ).json({
+      success: false,
+      message: keyCheck.message,
+    });
+  }
+
+  // ====================================================
+  // GET / POST URL
+  // ====================================================
 
   const rawUrl =
     req.method === "POST"
@@ -164,9 +290,9 @@ export default async function handler(req, res) {
     });
   }
 
-  // ==========================================
+  // ====================================================
   // DETECT PLATFORM
-  // ==========================================
+  // ====================================================
 
   const platform =
     detectPlatform(cleanUrl);
@@ -189,23 +315,27 @@ export default async function handler(req, res) {
     const downloads = [];
 
     const encodedUrl =
-      encodeURIComponent(cleanUrl);
+      encodeURIComponent(
+        cleanUrl
+      );
 
-    // ==========================================
+    // ==================================================
     // YOUTUBE
-    // ==========================================
+    // ==================================================
 
     if (platform === "youtube") {
-      const [mp4Data, mp3Data] =
-        await Promise.all([
-          safeFetchJson(
-            `https://api.azbry.com/api/download/ytmp4?url=${encodedUrl}`
-          ),
+      const [
+        mp4Data,
+        mp3Data,
+      ] = await Promise.all([
+        safeFetchJson(
+          `https://api.azbry.com/api/download/ytmp4?url=${encodedUrl}`
+        ),
 
-          safeFetchJson(
-            `https://api.azbry.com/api/download/ytmp3?url=${encodedUrl}`
-          ),
-        ]);
+        safeFetchJson(
+          `https://api.azbry.com/api/download/ytmp3?url=${encodedUrl}`
+        ),
+      ]);
 
       const validResult =
         mp4Data?.result ||
@@ -225,7 +355,9 @@ export default async function handler(req, res) {
           validResult.thumbnail ||
           "";
 
-        if (validResult.duration) {
+        if (
+          validResult.duration
+        ) {
           const dur =
             Number(
               validResult.duration
@@ -233,7 +365,9 @@ export default async function handler(req, res) {
 
           if (!isNaN(dur)) {
             const m =
-              Math.floor(dur / 60);
+              Math.floor(
+                dur / 60
+              );
 
             const s =
               dur % 60;
@@ -280,9 +414,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // ==========================================
+    // ==================================================
     // SPOTIFY
-    // ==========================================
+    // ==================================================
 
     else if (
       platform === "spotify"
@@ -325,9 +459,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // ==========================================
+    // ==================================================
     // TIKTOK
-    // ==========================================
+    // ==================================================
 
     else if (
       platform === "tiktok"
@@ -417,9 +551,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // ==========================================
+    // ==================================================
     // CAPCUT
-    // ==========================================
+    // ==================================================
 
     else if (
       platform === "capcut"
@@ -470,9 +604,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // ==========================================
+    // ==================================================
     // FACEBOOK
-    // ==========================================
+    // ==================================================
 
     else if (
       platform === "facebook"
@@ -554,180 +688,237 @@ export default async function handler(req, res) {
       }
     }
 
-    // ==========================================
-// INSTAGRAM
-// ==========================================
+    // ==================================================
+    // INSTAGRAM
+    // ==================================================
 
-else if (platform === "instagram") {
-  const igData = await safeFetchJson(
-    `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
-  );
-
-  const root = igData?.data || {};
-
-  title =
-    root?.title ||
-    root?.caption ||
-    "Instagram Media";
-
-  author =
-    root?.username ||
-    root?.author ||
-    "";
-
-  thumbnail =
-    root?.thumbnail ||
-    root?.thumb ||
-    root?.cover ||
-    root?.image ||
-    "";
-
-  // ==========================================
-  // FORMAT BARU:
-  // data.media[]
-  // ==========================================
-
-  if (Array.isArray(root?.media)) {
-    for (const media of root.media) {
-      if (!media) continue;
-
-      const mediaUrl =
-        typeof media === "string"
-          ? media
-          : media?.url;
-
-      if (!mediaUrl) continue;
-
-      const mediaType =
-        String(
-          media?.type ||
-          ""
-        ).toLowerCase();
-
-      const label =
-        media?.label ||
-        (
-          media?.quality
-            ? `${media.quality}p`
-            : ""
+    else if (
+      platform === "instagram"
+    ) {
+      const igData =
+        await safeFetchJson(
+          `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
         );
 
-      // VIDEO
-      if (
-        mediaType === "mp4" ||
-        mediaType === "video" ||
-        mediaUrl.toLowerCase().includes(".mp4")
-      ) {
-        downloads.push({
-          url: mediaUrl,
-          text: label
-            ? `Download Video (${label})`
-            : "Download Video",
-          type: "instagram"
-        });
+      const root =
+        igData?.data ||
+        {};
 
-        continue;
+      title =
+        root?.title ||
+        root?.caption ||
+        "Instagram Media";
+
+      author =
+        root?.username ||
+        root?.author ||
+        "";
+
+      thumbnail =
+        root?.thumbnail ||
+        root?.thumb ||
+        root?.cover ||
+        root?.image ||
+        "";
+
+      // ==================================================
+      // FORMAT BARU: data.media[]
+      // ==================================================
+
+      if (
+        Array.isArray(
+          root?.media
+        )
+      ) {
+        for (
+          const media of root.media
+        ) {
+          if (!media) continue;
+
+          const mediaUrl =
+            typeof media ===
+            "string"
+              ? media
+              : media?.url;
+
+          if (!mediaUrl) {
+            continue;
+          }
+
+          const mediaType =
+            String(
+              media?.type ||
+              ""
+            ).toLowerCase();
+
+          const label =
+            media?.label ||
+            (
+              media?.quality
+                ? `${media.quality}p`
+                : ""
+            );
+
+          // VIDEO
+          if (
+            mediaType === "mp4" ||
+            mediaType === "video" ||
+            mediaUrl
+              .toLowerCase()
+              .includes(".mp4")
+          ) {
+            downloads.push({
+              url:
+                mediaUrl,
+
+              text:
+                label
+                  ? `Download Video (${label})`
+                  : "Download Video",
+
+              type:
+                "instagram",
+            });
+
+            continue;
+          }
+
+          // AUDIO
+          if (
+            mediaType === "mp3" ||
+            mediaType === "m4a" ||
+            mediaType === "aac" ||
+            mediaType === "audio"
+          ) {
+            downloads.push({
+              url:
+                mediaUrl,
+
+              text:
+                label
+                  ? `Download Audio (${label})`
+                  : "Download Audio",
+
+              type:
+                "audio",
+            });
+
+            continue;
+          }
+
+          // FORMAT LAIN
+          downloads.push({
+            url:
+              mediaUrl,
+
+            text:
+              label
+                ? `Download Media (${label})`
+                : "Download Media",
+
+            type:
+              "instagram",
+          });
+        }
       }
 
-      // AUDIO
-      if (
-        mediaType === "mp3" ||
-        mediaType === "m4a" ||
-        mediaType === "aac" ||
-        mediaType === "audio"
-      ) {
-        downloads.push({
-          url: mediaUrl,
-          text: label
-            ? `Download Audio (${label})`
-            : "Download Audio",
-          type: "audio"
-        });
+      // ==================================================
+      // FORMAT LAMA
+      // ==================================================
 
-        continue;
+      if (
+        downloads.length === 0
+      ) {
+        const possibleUrls = [
+          root?.download_url,
+          root?.download,
+          root?.video_url,
+          root?.video,
+          root?.url,
+          root?.media_url,
+        ];
+
+        for (
+          const url of possibleUrls
+        ) {
+          if (!url) continue;
+
+          downloads.push({
+            url,
+
+            text:
+              "Download Media",
+
+            type:
+              "instagram",
+          });
+        }
       }
 
-      // FORMAT LAIN
-      downloads.push({
-        url: mediaUrl,
-        text: label
-          ? `Download Media (${label})`
-          : "Download Media",
-        type: "instagram"
-      });
+      // ==================================================
+      // ROOT ARRAY
+      // ==================================================
+
+      if (
+        downloads.length === 0 &&
+        Array.isArray(root)
+      ) {
+        root.forEach(
+          (
+            item,
+            index
+          ) => {
+            const mediaUrl =
+              typeof item ===
+              "string"
+                ? item
+                : item?.url;
+
+            if (!mediaUrl) {
+              return;
+            }
+
+            downloads.push({
+              url:
+                mediaUrl,
+
+              text:
+                `Download Media #${index + 1}`,
+
+              type:
+                "instagram",
+            });
+          }
+        );
+      }
     }
-  }
 
-  // ==========================================
-  // FORMAT LAMA
-  // ==========================================
-
-  if (downloads.length === 0) {
-    const possibleUrls = [
-      root?.download_url,
-      root?.download,
-      root?.video_url,
-      root?.video,
-      root?.url,
-      root?.media_url
-    ];
-
-    for (const url of possibleUrls) {
-      if (!url) continue;
-
-      downloads.push({
-        url,
-        text: "Download Media",
-        type: "instagram"
-      });
-    }
-  }
-
-  // ==========================================
-  // JIKA DATA.MEDIA BERUPA ARRAY NESTED
-  // ==========================================
-
-  if (
-    downloads.length === 0 &&
-    Array.isArray(root)
-  ) {
-    root.forEach((item, index) => {
-      const mediaUrl =
-        typeof item === "string"
-          ? item
-          : item?.url;
-
-      if (!mediaUrl) return;
-
-      downloads.push({
-        url: mediaUrl,
-        text: `Download Media #${index + 1}`,
-        type: "instagram"
-      });
-    });
-  }
-}
-
-    // ==========================================
+    // ==================================================
     // REMOVE DUPLICATE
-    // ==========================================
+    // ==================================================
 
     const uniqueDownloads =
       downloads.filter(
-        (item, index, array) =>
+        (
+          item,
+          index,
+          array
+        ) =>
           item.url &&
           array.findIndex(
             (x) =>
-              x.url === item.url
+              x.url ===
+              item.url
           ) === index
       );
 
-    // ==========================================
+    // ==================================================
     // NO DOWNLOAD
-    // ==========================================
+    // ==================================================
 
     if (
-      uniqueDownloads.length === 0
+      uniqueDownloads.length ===
+      0
     ) {
       return res.status(404).json({
         success: false,
@@ -737,9 +928,9 @@ else if (platform === "instagram") {
       });
     }
 
-    // ==========================================
+    // ==================================================
     // SUCCESS
-    // ==========================================
+    // ==================================================
 
     return res.status(200).json({
       success: true,
