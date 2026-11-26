@@ -2,154 +2,20 @@ export const config = {
   maxDuration: 15,
 };
 
-import keyStore from "../lib/keyStore.js";
-
-const {
-  getAllKeys,
-  touchKey,
-} = keyStore;
-
-// ======================================================
-// API KEY SYSTEM — UPSTASH REDIS
-// ======================================================
-
-const getRequestApiKey = (req) => {
-  const headerKey =
-    req.headers?.["x-api-key"] ||
-    req.headers?.["X-API-Key"];
-
-  const queryKey =
-    req.query?.apikey ||
-    req.query?.api_key ||
-    req.query?.key;
-
-  const bodyKey =
-    req.body?.apikey ||
-    req.body?.api_key ||
-    req.body?.key;
-
-  return (
-    headerKey ||
-    queryKey ||
-    bodyKey ||
-    ""
-  )
-    .trim();
-};
-
-const getRequestUserId = (req) => {
-  return (
-    req.headers?.["x-user-id"] ||
-    req.headers?.["X-User-ID"] ||
-    req.query?.userId ||
-    req.query?.user_id ||
-    req.body?.userId ||
-    req.body?.user_id ||
-    null
-  );
-};
-
-const checkApiKey = async (req) => {
-  const requestKey =
-    getRequestApiKey(req);
-
-  if (!requestKey) {
-    return {
-      valid: false,
-      status: 401,
-      message: "API key diperlukan.",
-    };
-  }
-
-  const keys =
-    await getAllKeys();
-
-  const item =
-    keys[requestKey];
-
-  if (!item) {
-    return {
-      valid: false,
-      status: 401,
-      message:
-        "API key tidak valid atau sudah dihapus.",
-    };
-  }
-
-  // Hanya key ACTIVE yang boleh digunakan
-  if (item.status !== "active") {
-    return {
-      valid: false,
-      status: 401,
-      message:
-        "API key tidak aktif atau sudah direvoke.",
-    };
-  }
-
-  const userId =
-    getRequestUserId(req);
-
-  /*
-   * Jika request mengirim userId,
-   * pastikan key memang milik user tersebut.
-   *
-   * Kalau userId tidak dikirim, key tetap
-   * bisa digunakan sebagai API credential.
-   */
-
-  if (
-    userId !== null &&
-    item.userId !== null &&
-    String(item.userId) !==
-      String(userId)
-  ) {
-    return {
-      valid: false,
-      status: 403,
-      message:
-        "API key bukan milik user ini.",
-    };
-  }
-
-  return {
-    valid: true,
-    key: requestKey,
-    item,
-    userId,
-  };
-};
-
-// ======================================================
-// EXTRACT URL
-// ======================================================
-
 const extractUrl = (text) => {
   if (!text) return "";
 
-  const match =
-    String(text).match(
-      /https?:\/\/[^\s]+/i
-    );
+  const match = String(text).match(/https?:\/\/[^\s]+/i);
 
-  if (!match) {
-    return String(text).trim();
-  }
+  if (!match) return String(text).trim();
 
   return match[0]
-    .replace(
-      /[.,!?;:)\]}]+$/g,
-      ""
-    )
+    .replace(/[.,!?;:)\]}]+$/g, "")
     .trim();
 };
 
-// ======================================================
-// DETECT PLATFORM
-// ======================================================
-
 const detectPlatform = (rawUrl) => {
-  const url =
-    extractUrl(rawUrl).toLowerCase();
+  const url = extractUrl(rawUrl).toLowerCase();
 
   if (!url) return null;
 
@@ -199,40 +65,28 @@ const detectPlatform = (rawUrl) => {
   return null;
 };
 
-// ======================================================
-// SAFE FETCH JSON
-// ======================================================
+const safeFetchJson = async (url, timeoutMs = 8000) => {
+  const controller = new AbortController();
 
-const safeFetchJson = async (
-  url,
-  timeoutMs = 8000
-) => {
-  const controller =
-    new AbortController();
-
-  const timer =
-    setTimeout(() => {
-      controller.abort();
-    }, timeoutMs);
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
 
   try {
-    const response =
-      await fetch(url, {
-        signal: controller.signal,
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-
-          Accept:
-            "application/json, text/plain, */*",
-        },
-      });
+        Accept:
+          "application/json, text/plain, */*",
+      },
+    });
 
     clearTimeout(timer);
 
-    const text =
-      await response.text();
+    const text = await response.text();
 
     try {
       return JSON.parse(text);
@@ -245,17 +99,10 @@ const safeFetchJson = async (
   }
 };
 
-// ======================================================
-// MAIN HANDLER
-// ======================================================
-
-export default async function handler(
-  req,
-  res
-) {
-  // ====================================================
-  // CORS
-  // ====================================================
+export default async function handler(req, res) {
+  // ==========================================
+  // CORS UNTUK API PUBLIC
+  // ==========================================
 
   res.setHeader(
     "Content-Type",
@@ -274,20 +121,17 @@ export default async function handler(
 
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, X-API-Key, X-User-ID"
+    "Content-Type"
   );
 
-  // ====================================================
-  // PREFLIGHT
-  // ====================================================
-
+  // OPTIONS / PREFLIGHT
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // ====================================================
+  // ==========================================
   // METHOD
-  // ====================================================
+  // ==========================================
 
   if (
     req.method !== "POST" &&
@@ -300,41 +144,9 @@ export default async function handler(
     });
   }
 
-  // ====================================================
-  // API KEY
-  // ====================================================
-
-  let keyCheck;
-
-  try {
-    keyCheck =
-      await checkApiKey(req);
-  } catch (error) {
-    console.error(
-      "API KEY REDIS ERROR:",
-      error
-    );
-
-    return res.status(500).json({
-      success: false,
-      message:
-        "Sistem API key sedang mengalami gangguan.",
-    });
-  }
-
-  if (!keyCheck.valid) {
-    return res.status(
-      keyCheck.status
-    ).json({
-      success: false,
-      message:
-        keyCheck.message,
-    });
-  }
-
-  // ====================================================
-  // GET / POST URL
-  // ====================================================
+  // ==========================================
+  // GET / POST
+  // ==========================================
 
   const rawUrl =
     req.method === "POST"
@@ -352,9 +164,9 @@ export default async function handler(
     });
   }
 
-  // ====================================================
+  // ==========================================
   // DETECT PLATFORM
-  // ====================================================
+  // ==========================================
 
   const platform =
     detectPlatform(cleanUrl);
@@ -364,34 +176,6 @@ export default async function handler(
       success: false,
       message:
         "Platform tidak didukung.",
-    });
-  }
-
-  /*
-   * Tandai API key sebagai digunakan.
-   *
-   * Ini juga memperbarui:
-   * - lastUsed
-   * - uses
-   *
-   * sehingga status ONLINE bisa dihitung
-   * berdasarkan ONLINE_TTL_SECONDS.
-   */
-  try {
-    await touchKey(
-      keyCheck.key,
-      keyCheck.userId
-    );
-  } catch (error) {
-    console.error(
-      "TOUCH API KEY ERROR:",
-      error
-    );
-
-    return res.status(500).json({
-      success: false,
-      message:
-        "Gagal memperbarui status API key.",
     });
   }
 
@@ -405,27 +189,23 @@ export default async function handler(
     const downloads = [];
 
     const encodedUrl =
-      encodeURIComponent(
-        cleanUrl
-      );
+      encodeURIComponent(cleanUrl);
 
-    // ==================================================
+    // ==========================================
     // YOUTUBE
-    // ==================================================
+    // ==========================================
 
     if (platform === "youtube") {
-      const [
-        mp4Data,
-        mp3Data,
-      ] = await Promise.all([
-        safeFetchJson(
-          `https://api.azbry.com/api/download/ytmp4?url=${encodedUrl}`
-        ),
+      const [mp4Data, mp3Data] =
+        await Promise.all([
+          safeFetchJson(
+            `https://api.azbry.com/api/download/ytmp4?url=${encodedUrl}`
+          ),
 
-        safeFetchJson(
-          `https://api.azbry.com/api/download/ytmp3?url=${encodedUrl}`
-        ),
-      ]);
+          safeFetchJson(
+            `https://api.azbry.com/api/download/ytmp3?url=${encodedUrl}`
+          ),
+        ]);
 
       const validResult =
         mp4Data?.result ||
@@ -445,9 +225,7 @@ export default async function handler(
           validResult.thumbnail ||
           "";
 
-        if (
-          validResult.duration
-        ) {
+        if (validResult.duration) {
           const dur =
             Number(
               validResult.duration
@@ -455,9 +233,7 @@ export default async function handler(
 
           if (!isNaN(dur)) {
             const m =
-              Math.floor(
-                dur / 60
-              );
+              Math.floor(dur / 60);
 
             const s =
               dur % 60;
@@ -504,9 +280,9 @@ export default async function handler(
       }
     }
 
-    // ==================================================
+    // ==========================================
     // SPOTIFY
-    // ==================================================
+    // ==========================================
 
     else if (
       platform === "spotify"
@@ -549,9 +325,9 @@ export default async function handler(
       }
     }
 
-    // ==================================================
+    // ==========================================
     // TIKTOK
-    // ==================================================
+    // ==========================================
 
     else if (
       platform === "tiktok"
@@ -641,9 +417,9 @@ export default async function handler(
       }
     }
 
-    // ==================================================
+    // ==========================================
     // CAPCUT
-    // ==================================================
+    // ==========================================
 
     else if (
       platform === "capcut"
@@ -694,9 +470,9 @@ export default async function handler(
       }
     }
 
-    // ==================================================
+    // ==========================================
     // FACEBOOK
-    // ==================================================
+    // ==========================================
 
     else if (
       platform === "facebook"
@@ -778,234 +554,180 @@ export default async function handler(
       }
     }
 
-    // ==================================================
-    // INSTAGRAM
-    // ==================================================
+    // ==========================================
+// INSTAGRAM
+// ==========================================
 
-    else if (
-      platform === "instagram"
-    ) {
-      const igData =
-        await safeFetchJson(
-          `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
+else if (platform === "instagram") {
+  const igData = await safeFetchJson(
+    `https://api.siputzx.my.id/api/d/sssinstagram?url=${encodedUrl}`
+  );
+
+  const root = igData?.data || {};
+
+  title =
+    root?.title ||
+    root?.caption ||
+    "Instagram Media";
+
+  author =
+    root?.username ||
+    root?.author ||
+    "";
+
+  thumbnail =
+    root?.thumbnail ||
+    root?.thumb ||
+    root?.cover ||
+    root?.image ||
+    "";
+
+  // ==========================================
+  // FORMAT BARU:
+  // data.media[]
+  // ==========================================
+
+  if (Array.isArray(root?.media)) {
+    for (const media of root.media) {
+      if (!media) continue;
+
+      const mediaUrl =
+        typeof media === "string"
+          ? media
+          : media?.url;
+
+      if (!mediaUrl) continue;
+
+      const mediaType =
+        String(
+          media?.type ||
+          ""
+        ).toLowerCase();
+
+      const label =
+        media?.label ||
+        (
+          media?.quality
+            ? `${media.quality}p`
+            : ""
         );
 
-      const root =
-        igData?.data ||
-        {};
-
-      title =
-        root?.title ||
-        root?.caption ||
-        "Instagram Media";
-
-      author =
-        root?.username ||
-        root?.author ||
-        "";
-
-      thumbnail =
-        root?.thumbnail ||
-        root?.thumb ||
-        root?.cover ||
-        root?.image ||
-        "";
-
-      // ==================================================
-      // FORMAT BARU: data.media[]
-      // ==================================================
-
+      // VIDEO
       if (
-        Array.isArray(
-          root?.media
-        )
+        mediaType === "mp4" ||
+        mediaType === "video" ||
+        mediaUrl.toLowerCase().includes(".mp4")
       ) {
-        for (
-          const media of root.media
-        ) {
-          if (!media) continue;
+        downloads.push({
+          url: mediaUrl,
+          text: label
+            ? `Download Video (${label})`
+            : "Download Video",
+          type: "instagram"
+        });
 
-          const mediaUrl =
-            typeof media ===
-            "string"
-              ? media
-              : media?.url;
-
-          if (!mediaUrl) {
-            continue;
-          }
-
-          const mediaType =
-            String(
-              media?.type ||
-              ""
-            ).toLowerCase();
-
-          const label =
-            media?.label ||
-            (
-              media?.quality
-                ? `${media.quality}p`
-                : ""
-            );
-
-          if (
-            mediaType === "mp4" ||
-            mediaType === "video" ||
-            mediaUrl
-              .toLowerCase()
-              .includes(".mp4")
-          ) {
-            downloads.push({
-              url:
-                mediaUrl,
-
-              text:
-                label
-                  ? `Download Video (${label})`
-                  : "Download Video",
-
-              type:
-                "instagram",
-            });
-
-            continue;
-          }
-
-          if (
-            mediaType === "mp3" ||
-            mediaType === "m4a" ||
-            mediaType === "aac" ||
-            mediaType === "audio"
-          ) {
-            downloads.push({
-              url:
-                mediaUrl,
-
-              text:
-                label
-                  ? `Download Audio (${label})`
-                  : "Download Audio",
-
-              type:
-                "audio",
-            });
-
-            continue;
-          }
-
-          downloads.push({
-            url:
-              mediaUrl,
-
-            text:
-              label
-                ? `Download Media (${label})`
-                : "Download Media",
-
-            type:
-              "instagram",
-          });
-        }
+        continue;
       }
 
-      // ==================================================
-      // FORMAT LAMA
-      // ==================================================
-
+      // AUDIO
       if (
-        downloads.length === 0
+        mediaType === "mp3" ||
+        mediaType === "m4a" ||
+        mediaType === "aac" ||
+        mediaType === "audio"
       ) {
-        const possibleUrls = [
-          root?.download_url,
-          root?.download,
-          root?.video_url,
-          root?.video,
-          root?.url,
-          root?.media_url,
-        ];
+        downloads.push({
+          url: mediaUrl,
+          text: label
+            ? `Download Audio (${label})`
+            : "Download Audio",
+          type: "audio"
+        });
 
-        for (
-          const url of possibleUrls
-        ) {
-          if (!url) continue;
-
-          downloads.push({
-            url,
-
-            text:
-              "Download Media",
-
-            type:
-              "instagram",
-          });
-        }
+        continue;
       }
 
-      // ==================================================
-      // ROOT ARRAY
-      // ==================================================
-
-      if (
-        downloads.length === 0 &&
-        Array.isArray(root)
-      ) {
-        root.forEach(
-          (
-            item,
-            index
-          ) => {
-            const mediaUrl =
-              typeof item ===
-              "string"
-                ? item
-                : item?.url;
-
-            if (!mediaUrl) {
-              return;
-            }
-
-            downloads.push({
-              url:
-                mediaUrl,
-
-              text:
-                `Download Media #${index + 1}`,
-
-              type:
-                "instagram",
-            });
-          }
-        );
-      }
+      // FORMAT LAIN
+      downloads.push({
+        url: mediaUrl,
+        text: label
+          ? `Download Media (${label})`
+          : "Download Media",
+        type: "instagram"
+      });
     }
+  }
 
-    // ==================================================
+  // ==========================================
+  // FORMAT LAMA
+  // ==========================================
+
+  if (downloads.length === 0) {
+    const possibleUrls = [
+      root?.download_url,
+      root?.download,
+      root?.video_url,
+      root?.video,
+      root?.url,
+      root?.media_url
+    ];
+
+    for (const url of possibleUrls) {
+      if (!url) continue;
+
+      downloads.push({
+        url,
+        text: "Download Media",
+        type: "instagram"
+      });
+    }
+  }
+
+  // ==========================================
+  // JIKA DATA.MEDIA BERUPA ARRAY NESTED
+  // ==========================================
+
+  if (
+    downloads.length === 0 &&
+    Array.isArray(root)
+  ) {
+    root.forEach((item, index) => {
+      const mediaUrl =
+        typeof item === "string"
+          ? item
+          : item?.url;
+
+      if (!mediaUrl) return;
+
+      downloads.push({
+        url: mediaUrl,
+        text: `Download Media #${index + 1}`,
+        type: "instagram"
+      });
+    });
+  }
+}
+
+    // ==========================================
     // REMOVE DUPLICATE
-    // ==================================================
+    // ==========================================
 
     const uniqueDownloads =
       downloads.filter(
-        (
-          item,
-          index,
-          array
-        ) =>
+        (item, index, array) =>
           item.url &&
           array.findIndex(
             (x) =>
-              x.url ===
-              item.url
+              x.url === item.url
           ) === index
       );
 
-    // ==================================================
+    // ==========================================
     // NO DOWNLOAD
-    // ==================================================
+    // ==========================================
 
     if (
-      uniqueDownloads.length ===
-      0
+      uniqueDownloads.length === 0
     ) {
       return res.status(404).json({
         success: false,
@@ -1015,9 +737,9 @@ export default async function handler(
       });
     }
 
-    // ==================================================
+    // ==========================================
     // SUCCESS
-    // ==================================================
+    // ==========================================
 
     return res.status(200).json({
       success: true,
