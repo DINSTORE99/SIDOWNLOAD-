@@ -1,8 +1,47 @@
+# Dependencies
 node_modules/
-dist/
+.pnpm-store/
+.yarn/
+.yarn-cache/
 
+# Build
+dist/
+build/
+.vite/
+
+# Environment / secrets
 .env
 .env.local
+.env.development
+.env.production
+.env.test
 .env.*.local
 
+# Vercel
 .vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temporary
+*.tmp
+*.temp
+
+# Local data
+*.local.json
+
+# Secrets / credentials
+*.pem
+*.key
+*.crt
