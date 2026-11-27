@@ -5,7 +5,7 @@ const API =
   "https://sidownload.dinn.my.id/api/download";
 
 const EXAMPLE_URL =
-  "https://vt.tiktok.com/ZSsS9roM1/";
+  "https://vt.tiktok.com/xxxxxx/";
 
 export default function Docs() {
   const [testUrl, setTestUrl] = useState("");
