@@ -1373,3 +1373,30 @@ input {
   }
 
 }
+
+
+.http-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.http-status-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #777b84;
+}
+
+.http-status-code {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1ed760;
+}
