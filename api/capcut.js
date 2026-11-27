@@ -3,7 +3,6 @@ import {
   setCors,
   capcut,
 } from "../lib/downloader.js";
-
 export const config = {
   maxDuration: 15,
 };
