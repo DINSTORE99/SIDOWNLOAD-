@@ -30,6 +30,47 @@ const extractCapCutUrl = (text) => {
 };
 
 // ==========================================
+// DINSTORE RESPONSE
+// ==========================================
+
+const successResponse = (
+  res,
+  downloadUrl
+) => {
+  return res.status(200).json({
+    success: true,
+
+    creator: "DINSTORE",
+
+    platform: "capcut",
+
+    message:
+      "Berhasil mendapatkan video CapCut.",
+
+    data: {
+      download:
+        downloadUrl,
+    },
+  });
+};
+
+const errorResponse = (
+  res,
+  statusCode,
+  message
+) => {
+  return res.status(statusCode).json({
+    success: false,
+
+    creator: "DINSTORE",
+
+    platform: "capcut",
+
+    message,
+  });
+};
+
+// ==========================================
 // HANDLER
 // ==========================================
 
@@ -56,15 +97,15 @@ export default async function handler(
     req.method !== "GET" &&
     req.method !== "POST"
   ) {
-    return res.status(405).json({
-      status: false,
-      message:
-        "Method not allowed",
-    });
+    return errorResponse(
+      res,
+      405,
+      "Metode tidak diizinkan."
+    );
   }
 
   // ==========================================
-  // GET / POST
+  // AMBIL URL
   // ==========================================
 
   const rawUrl =
@@ -74,15 +115,15 @@ export default async function handler(
     extractCapCutUrl(rawUrl);
 
   if (!url) {
-    return res.status(400).json({
-      status: false,
-      message:
-        "URL CapCut wajib diisi atau URL CapCut tidak ditemukan.",
-    });
+    return errorResponse(
+      res,
+      400,
+      "URL CapCut tidak ditemukan."
+    );
   }
 
   // ==========================================
-  // CALL CAPCUT API
+  // REQUEST API CAPCUT
   // ==========================================
 
   try {
@@ -114,36 +155,30 @@ export default async function handler(
       data =
         JSON.parse(text);
     } catch {
-      return res.status(502).json({
-        status: false,
-        message:
-          "API CapCut mengembalikan response yang tidak valid.",
-      });
+      return errorResponse(
+        res,
+        502,
+        "Response dari server CapCut tidak valid."
+      );
     }
 
     // ========================================
-    // API ERROR
+    // API CAPCUT GAGAL
     // ========================================
 
     if (
       !response.ok ||
       data?.status !== true
     ) {
-      return res.status(
-        response.status >= 400
-          ? response.status
-          : 404
-      ).json({
-        status: false,
-
-        message:
-          data?.message ||
-          "Gagal memproses link CapCut.",
-      });
+      return errorResponse(
+        res,
+        404,
+        "Gagal mendapatkan video CapCut."
+      );
     }
 
     // ========================================
-    // AMBIL DATA
+    // DATA CAPCUT
     // ========================================
 
     const capcutData =
@@ -154,50 +189,36 @@ export default async function handler(
       "";
 
     // ========================================
-    // DOWNLOAD URL TIDAK ADA
+    // LINK DOWNLOAD TIDAK ADA
     // ========================================
 
     if (!originalVideoUrl) {
-      return res.status(404).json({
-        status: false,
-
-        message:
-          "Video CapCut tidak ditemukan.",
-      });
+      return errorResponse(
+        res,
+        404,
+        "Video CapCut tidak ditemukan."
+      );
     }
 
     // ========================================
-    // RESPONSE
+    // BERHASIL
     // ========================================
 
-    return res.status(200).json({
-      status: true,
-
-      data: {
-        code:
-          capcutData?.code ||
-          200,
-
-        originalVideoUrl,
-      },
-
-      timestamp:
-        data?.timestamp ||
-        new Date().toISOString(),
-    });
+    return successResponse(
+      res,
+      originalVideoUrl
+    );
 
   } catch (error) {
     console.error(
-      "CapCut API Error:",
+      "DINSTORE CAPCUT ERROR:",
       error
     );
 
-    return res.status(500).json({
-      status: false,
-
-      message:
-        error?.message ||
-        "Gagal memproses CapCut.",
-    });
+    return errorResponse(
+      res,
+      500,
+      "Terjadi kesalahan saat memproses CapCut."
+    );
   }
 }
