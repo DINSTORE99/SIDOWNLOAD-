@@ -13,7 +13,9 @@ export default async function handler(req, res) {
 
   if (req.method !== "GET" && req.method !== "POST") {
     return res.status(405).json({
-      status: false,
+      success: false,
+      creator: "DINSTORE",
+      platform: "tiktok",
       message: "Method not allowed",
     });
   }
@@ -22,7 +24,9 @@ export default async function handler(req, res) {
 
   if (!url) {
     return res.status(400).json({
-      status: false,
+      success: false,
+      creator: "DINSTORE",
+      platform: "tiktok",
       message: "URL TikTok wajib diisi",
     });
   }
@@ -30,12 +34,19 @@ export default async function handler(req, res) {
   try {
     const data = await tiktok(url);
 
-    return res.status(200).json(data);
+    return res.status(200).json({
+      success: true,
+      creator: "DINSTORE",
+      platform: "tiktok",
+      ...data,
+    });
   } catch (error) {
     console.error("TikTok API Error:", error);
 
     return res.status(500).json({
-      status: false,
+      success: false,
+      creator: "DINSTORE",
+      platform: "tiktok",
       message: error.message || "Gagal memproses TikTok",
     });
   }
