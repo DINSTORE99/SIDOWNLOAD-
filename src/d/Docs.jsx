@@ -2,66 +2,326 @@ import { useState } from "react";
 import "./Docs.css";
 
 const API = "https://sidownload.dinn.my.id/api/download";
-const EXAMPLE_URL = "https://vt.tiktok.com/xxxxxx/";
+
+const EXAMPLE_URL =
+  "https://vt.tiktok.com/xxxxxx/";
 
 export default function Docs() {
-  const [url, setUrl] = useState("");
-  const [result, setResult] = useState(null);
+  const [testUrl, setTestUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState("");
+  const [response, setResponse] = useState(null);
+  const [httpStatus, setHttpStatus] = useState(null);
+  const [testError, setTestError] = useState("");
+  const [copied, setCopied] = useState(false);
 
-  const testApi = async () => {
-    if (!url.trim()) return;
+  const runTest = async () => {
+    const value = testUrl.trim();
+
+    if (!value) {
+      setTestError("Masukkan URL TikTok terlebih dahulu.");
+      setResponse(null);
+      setHttpStatus(null);
+      return;
+    }
 
     setLoading(true);
-    setResult(null);
+    setResponse(null);
+    setHttpStatus(null);
+    setTestError("");
 
     try {
-      const response = await fetch(API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url.trim(),
-        }),
-      });
+      const res = await fetch(
+        `${API}?url=${encodeURIComponent(value)}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
 
-      const data = await response.json();
-      setResult(data);
+      setHttpStatus(res.status);
+
+      const data = await res.json();
+
+      setResponse(data);
     } catch (error) {
-      setResult({
-        success: false,
-        creator: "DINSTORE",
-        message: "Gagal menghubungi API.",
-      });
+      setTestError(
+        error?.message || "Gagal terhubung ke API."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const copyText = async (text, name) => {
+  const loadExample = () => {
+    setTestUrl(EXAMPLE_URL);
+    setResponse(null);
+    setHttpStatus(null);
+    setTestError("");
+  };
+
+  const copyEndpoint = async () => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopied(name);
+      await navigator.clipboard.writeText(API);
+      setCopied(true);
 
       setTimeout(() => {
-        setCopied("");
+        setCopied(false);
       }, 1500);
     } catch {
-      setCopied("");
+      setCopied(false);
     }
   };
 
-  const requestExample = `POST ${API}
+  const goHome = () => {
+    window.location.href = "/";
+  };
 
-Content-Type: application/json
+  return (
+    <div className="docs-page">
+      <div className="docs-window">
 
-{
-  "url": "${EXAMPLE_URL}"
-}`;
+        {/* WINDOW BAR */}
+        <div className="docs-window-bar">
+          <div className="window-dots">
+            <span className="dot red"></span>
+            <span className="dot yellow"></span>
+            <span className="dot green"></span>
+          </div>
 
-  const responseExample = `{
+          <div className="window-title">
+            sidownload@api ~ terminal
+          </div>
+
+          <button
+            className="window-home"
+            onClick={goHome}
+          >
+            HOME
+          </button>
+        </div>
+
+        {/* HEADER */}
+        <header className="docs-header">
+          <div>
+            <div className="docs-brand">
+              SIDOWNLOAD
+            </div>
+
+            <div className="docs-subtitle">
+              API DOCUMENTATION
+            </div>
+          </div>
+
+          <button
+            className="docs-back"
+            onClick={goHome}
+          >
+            ← Back
+          </button>
+        </header>
+
+        <main className="docs-container">
+
+          {/* INTRO */}
+          <section className="docs-intro">
+            <div className="intro-badge">
+              API V1
+            </div>
+
+            <h1>
+              Media Downloader API
+            </h1>
+
+            <p>
+              API sederhana untuk memproses link TikTok
+              dan mendapatkan informasi media secara
+              cepat.
+            </p>
+          </section>
+
+          {/* API TESTER */}
+          <section className="docs-section">
+            <div className="section-number">
+              00
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                API Tester
+              </div>
+
+              <p>
+                Masukkan link TikTok untuk mencoba API
+                secara langsung.
+              </p>
+
+              <div className="api-tester">
+                <div className="tester-input-row">
+                  <input
+                    type="text"
+                    value={testUrl}
+                    onChange={(e) =>
+                      setTestUrl(e.target.value)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        runTest();
+                      }
+                    }}
+                    placeholder="https://vt.tiktok.com/..."
+                  />
+
+                  <button
+                    onClick={runTest}
+                    disabled={loading}
+                  >
+                    {loading ? "TEST..." : "TEST API"}
+                  </button>
+                </div>
+
+                <button
+                  className="example-button"
+                  onClick={loadExample}
+                >
+                  Gunakan Contoh
+                </button>
+
+                {testError && (
+                  <div className="test-error">
+                    {testError}
+                  </div>
+                )}
+
+                {httpStatus && (
+                  <div className="http-status">
+                    <span className="http-status-label">
+                      HTTP STATUS
+                    </span>
+
+                    <span className="http-status-code">
+                      {httpStatus}
+                    </span>
+                  </div>
+                )}
+
+                {response && (
+                  <div className="tester-response">
+                    <div className="response-header">
+                      <span>RESPONSE</span>
+
+                      <span
+                        className={
+                          response.success
+                            ? "response-success"
+                            : "response-failed"
+                        }
+                      >
+                        {response.success
+                          ? "SUCCESS"
+                          : "FAILED"}
+                      </span>
+                    </div>
+
+                    <pre>
+                      {JSON.stringify(
+                        response,
+                        null,
+                        2
+                      )}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* 01 */}
+          <section className="docs-section">
+            <div className="section-number">
+              01
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                API Endpoint
+              </div>
+
+              <p>
+                Gunakan endpoint berikut untuk
+                mengakses API SIDOWNLOAD.
+              </p>
+
+              <div className="code-box">
+                <code>{API}</code>
+
+                <button
+                  className="copy-button"
+                  onClick={copyEndpoint}
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* 02 */}
+          <section className="docs-section">
+            <div className="section-number">
+              02
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                Parameter
+              </div>
+
+              <div className="parameter-box">
+                <div className="parameter-name">
+                  url
+                </div>
+
+                <div className="parameter-type">
+                  string
+                </div>
+
+                <div className="parameter-desc">
+                  URL video TikTok yang ingin diproses.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 03 */}
+          <section className="docs-section">
+            <div className="section-number">
+              03
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                Contoh Request
+              </div>
+
+              <pre className="code-block">
+{`GET ${API}?url=https%3A%2F%2Fvt.tiktok.com%2Fxxxxxx%2F`}
+              </pre>
+            </div>
+          </section>
+
+          {/* 04 */}
+          <section className="docs-section">
+            <div className="section-number">
+              04
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                JSON Response
+              </div>
+
+              <pre className="code-block">
+{`{
   "success": true,
   "creator": "DINSTORE",
   "platform": "tiktok",
@@ -80,739 +340,277 @@ Content-Type: application/json
       "type": "audio"
     }
   ]
-}`;
+}`}
+              </pre>
+            </div>
+          </section>
 
-  const javascriptExample = `const response = await fetch("${API}", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    url: "${EXAMPLE_URL}"
-  })
-});
+          {/* 05 */}
+          <section className="docs-section">
+            <div className="section-number">
+              05
+            </div>
 
-const data = await response.json();
+            <div className="section-content">
+              <div className="section-title">
+                Downloads
+              </div>
 
-console.log(data);`;
+              <p>
+                Data download tersedia pada array
+                <code> downloads</code>.
+              </p>
 
-  const nodeExample = `const fetch = require("node-fetch");
+              <pre className="code-block">
+{`data.downloads.forEach((item) => {
+  console.log(item.text);
+  console.log(item.type);
+});`}
+              </pre>
+            </div>
+          </section>
 
-const response = await fetch("${API}", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    url: "${EXAMPLE_URL}"
-  })
-});
+          {/* 06 */}
+          <section className="docs-section">
+            <div className="section-number">
+              06
+            </div>
 
-const data = await response.json();
+            <div className="section-content">
+              <div className="section-title">
+                JavaScript
+              </div>
 
-console.log(data);`;
+              <pre className="code-block">
+{`const url =
+  "https://vt.tiktok.com/xxxxxx/";
 
-  const pythonExample = `import requests
-
-url = "${API}"
-
-data = {
-    "url": "${EXAMPLE_URL}"
-}
-
-response = requests.post(url, json=data)
-
-print(response.json())`;
-
-  const phpExample = `<?php
-
-$url = "${API}";
-
-$data = [
-    "url" => "${EXAMPLE_URL}"
-];
-
-$options = [
-    "http" => [
-        "method" => "POST",
-        "header" => "Content-Type: application/json",
-        "content" => json_encode($data)
-    ]
-];
-
-$context = stream_context_create($options);
-
-$response = file_get_contents($url, false, $context);
-
-echo $response;
-
-?>`;
-
-  const curlExample = `curl -X POST "${API}" \\
--H "Content-Type: application/json" \\
--d '{
-  "url": "${EXAMPLE_URL}"
-}'`;
-
-  const botExample = `const response = await fetch("${API}", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    url: message.text
-  })
-});
+const response = await fetch(
+  "${API}?url=" +
+  encodeURIComponent(url)
+);
 
 const data = await response.json();
 
 if (data.success) {
-  console.log(data.title);
-  console.log(data.author);
-  console.log(data.downloads);
-}`;
+  console.log("Judul:", data.title);
+  console.log("Author:", data.author);
 
-  return (
-    <div className="docs-page">
-      <div className="docs-container">
-
-        {/* HEADER */}
-        <header className="docs-header">
-          <div className="terminal-title">
-            <span className="dot red"></span>
-            <span className="dot yellow"></span>
-            <span className="dot green"></span>
-
-            <span className="terminal-name">
-              SIDOWNLOAD API
-            </span>
-          </div>
-
-          <div className="docs-brand">
-            <span className="brand-symbol">S</span>
-
-            <div>
-              <strong>SIDOWNLOAD</strong>
-              <small>API DOCUMENTATION</small>
+  data.downloads.forEach((item) => {
+    console.log(item.text);
+    console.log(item.type);
+  });
+} else {
+  console.log(data.message);
+}`}
+              </pre>
             </div>
-          </div>
-        </header>
+          </section>
 
-        {/* HERO */}
-        <section className="docs-hero">
-          <div className="hero-badge">
-            <span className="status-dot"></span>
-            API ONLINE
-          </div>
-
-          <h1>
-            SIDOWNLOAD
-            <span> API</span>
-          </h1>
-
-          <p>
-            API downloader sederhana untuk mengambil media
-            dari berbagai platform sosial media.
-          </p>
-
-          <div className="creator-badge">
-            CREATED BY <strong>DINSTORE</strong>
-          </div>
-        </section>
-
-        {/* API TESTER */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">01</span>
-
-            <div>
-              <h2>API Tester</h2>
-              <p>Test API langsung dari halaman ini.</p>
-            </div>
-          </div>
-
-          <div className="tester-box">
-            <label>URL VIDEO</label>
-
-            <div className="tester-input">
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://vt.tiktok.com/xxxxxx/"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    testApi();
-                  }
-                }}
-              />
-
-              <button
-                onClick={testApi}
-                disabled={loading}
-              >
-                {loading ? "PROCESS..." : "TEST API"}
-              </button>
+          {/* 07 */}
+          <section className="docs-section">
+            <div className="section-number">
+              07
             </div>
 
-            {result && (
-              <div className="tester-result">
-                <div className="result-header">
-                  <span>RESPONSE</span>
-
-                  <span
-                    className={
-                      result.success
-                        ? "result-status success"
-                        : "result-status error"
-                    }
-                  >
-                    {result.success ? "SUCCESS" : "ERROR"}
-                  </span>
-                </div>
-
-                <pre>
-                  {JSON.stringify(result, null, 2)}
-                </pre>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ENDPOINT */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">02</span>
-
-            <div>
-              <h2>Endpoint</h2>
-              <p>Endpoint utama SIDOWNLOAD.</p>
-            </div>
-          </div>
-
-          <div className="endpoint-card">
-            <div className="method post">
-              POST
-            </div>
-
-            <code>{API}</code>
-
-            <button
-              onClick={() => copyText(API, "endpoint")}
-            >
-              {copied === "endpoint" ? "COPIED" : "COPY"}
-            </button>
-          </div>
-
-          <div className="info-card">
-            <div>
-              <strong>Method</strong>
-              <span>POST</span>
-            </div>
-
-            <div>
-              <strong>Content-Type</strong>
-              <span>application/json</span>
-            </div>
-
-            <div>
-              <strong>API Key</strong>
-              <span>Tidak diperlukan</span>
-            </div>
-          </div>
-        </section>
-
-        {/* PARAMETER */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">03</span>
-
-            <div>
-              <h2>Parameter</h2>
-              <p>Parameter yang digunakan oleh API.</p>
-            </div>
-          </div>
-
-          <div className="table-card">
-            <div className="table-row table-head">
-              <span>Parameter</span>
-              <span>Type</span>
-              <span>Required</span>
-              <span>Description</span>
-            </div>
-
-            <div className="table-row">
-              <span className="code-text">url</span>
-              <span>string</span>
-              <span className="required">YES</span>
-              <span>
-                URL media yang ingin diproses
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* REQUEST */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">04</span>
-
-            <div>
-              <h2>Example Request</h2>
-              <p>Contoh request menggunakan JSON.</p>
-            </div>
-          </div>
-
-          <div className="code-card">
-            <div className="code-header">
-              <span>REQUEST</span>
-
-              <button
-                onClick={() =>
-                  copyText(requestExample, "request")
-                }
-              >
-                {copied === "request" ? "COPIED" : "COPY"}
-              </button>
-            </div>
-
-            <pre>{requestExample}</pre>
-          </div>
-        </section>
-
-        {/* RESPONSE */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">05</span>
-
-            <div>
-              <h2>JSON Response</h2>
-              <p>
-                Struktur response yang dikembalikan API.
-              </p>
-            </div>
-          </div>
-
-          <div className="code-card">
-            <div className="code-header">
-              <span>RESPONSE</span>
-
-              <button
-                onClick={() =>
-                  copyText(responseExample, "response")
-                }
-              >
-                {copied === "response" ? "COPIED" : "COPY"}
-              </button>
-            </div>
-
-            <pre>{responseExample}</pre>
-          </div>
-        </section>
-
-        {/* DOWNLOADS */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">06</span>
-
-            <div>
-              <h2>Downloads</h2>
-              <p>
-                Jenis hasil download yang dapat tersedia.
-              </p>
-            </div>
-          </div>
-
-          <div className="download-types">
-            <div className="download-type">
-              <div className="download-icon">
-                🎬
+            <div className="section-content">
+              <div className="section-title">
+                Node.js
               </div>
 
-              <div>
-                <strong>Video</strong>
+              <pre className="code-block">
+{`const result = await download(
+  "https://vt.tiktok.com/xxxxxx/"
+);`}
+              </pre>
+            </div>
+          </section>
 
-                <span>
-                  Download video tanpa watermark jika
-                  tersedia dari sumber.
-                </span>
+          {/* 08 */}
+          <section className="docs-section">
+            <div className="section-number">
+              08
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                Python
+              </div>
+
+              <pre className="code-block">
+{`import requests
+
+url = "https://vt.tiktok.com/xxxxxx/"
+
+response = requests.get(
+    "${API}",
+    params={
+        "url": url
+    }
+)
+
+data = response.json()
+
+if data["success"]:
+    print("Judul:", data["title"])
+    print("Author:", data["author"])
+
+    for item in data["downloads"]:
+        print(item["text"])
+        print(item["type"])
+else:
+    print(data["message"])`}
+              </pre>
+            </div>
+          </section>
+
+          {/* 09 */}
+          <section className="docs-section">
+            <div className="section-number">
+              09
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                PHP
+              </div>
+
+              <pre className="code-block">
+{`<?php
+
+$url =
+  "https://vt.tiktok.com/xxxxxx/";
+
+$api =
+  "${API}?url=" .
+  urlencode($url);
+
+$response =
+  file_get_contents($api);
+
+$data =
+  json_decode(
+    $response,
+    true
+  );
+
+if ($data["success"]) {
+  echo $data["title"];
+} else {
+  echo $data["message"];
+}`}
+              </pre>
+            </div>
+          </section>
+
+          {/* 10 */}
+          <section className="docs-section">
+            <div className="section-number">
+              10
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                cURL
+              </div>
+
+              <pre className="code-block">
+{`curl "${API}?url=https%3A%2F%2Fvt.tiktok.com%2Fxxxxxx%2F"`}
+              </pre>
+            </div>
+          </section>
+
+          {/* 11 */}
+          <section className="docs-section">
+            <div className="section-number">
+              11
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                Integrasi Bot
+              </div>
+
+              <p>
+                Contoh mengambil informasi download
+                untuk digunakan pada bot.
+              </p>
+
+              <pre className="code-block">
+{`const response = await fetch(
+  "${API}?url=" +
+  encodeURIComponent(url)
+);
+
+const data = await response.json();
+
+if (data.success) {
+  for (const item of data.downloads) {
+    console.log(
+      item.text,
+      item.type
+    );
+  }
+}`}
+              </pre>
+            </div>
+          </section>
+
+          {/* 12 */}
+          <section className="docs-section">
+            <div className="section-number">
+              12
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                Error Response
+              </div>
+
+              <pre className="code-block">
+{`{
+  "success": false,
+  "creator": "DINSTORE",
+  "message": "URL tidak boleh kosong."
+}`}
+              </pre>
+            </div>
+          </section>
+
+          {/* 13 */}
+          <section className="docs-section">
+            <div className="section-number">
+              13
+            </div>
+
+            <div className="section-content">
+              <div className="section-title">
+                Platform
+              </div>
+
+              <div className="platform-list">
+                <span>TikTok</span>
+                <span>Instagram</span>
+                <span>YouTube</span>
+                <span>Facebook</span>
+                <span>CapCut</span>
+                <span>Spotify</span>
               </div>
             </div>
+          </section>
 
-            <div className="download-type">
-              <div className="download-icon">
-                🎵
-              </div>
+        </main>
 
-              <div>
-                <strong>Audio</strong>
-
-                <span>
-                  Download audio MP3 jika platform
-                  menyediakan hasil audio.
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* JAVASCRIPT */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">07</span>
-
-            <div>
-              <h2>JavaScript</h2>
-              <p>
-                Contoh penggunaan menggunakan JavaScript.
-              </p>
-            </div>
+        {/* FOOTER */}
+        <footer className="docs-footer">
+          <div>
+            SIDOWNLOAD API
           </div>
 
-          <div className="code-card">
-            <div className="code-header">
-              <span>JAVASCRIPT</span>
-
-              <button
-                onClick={() =>
-                  copyText(
-                    javascriptExample,
-                    "javascript"
-                  )
-                }
-              >
-                {copied === "javascript"
-                  ? "COPIED"
-                  : "COPY"}
-              </button>
-            </div>
-
-            <pre>{javascriptExample}</pre>
-          </div>
-        </section>
-
-        {/* NODE */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">08</span>
-
-            <div>
-              <h2>Node.js</h2>
-              <p>
-                Contoh penggunaan menggunakan Node.js.
-              </p>
-            </div>
-          </div>
-
-          <div className="code-card">
-            <div className="code-header">
-              <span>NODE.JS</span>
-
-              <button
-                onClick={() =>
-                  copyText(nodeExample, "node")
-                }
-              >
-                {copied === "node" ? "COPIED" : "COPY"}
-              </button>
-            </div>
-
-            <pre>{nodeExample}</pre>
-          </div>
-        </section>
-
-        {/* PYTHON */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">09</span>
-
-            <div>
-              <h2>Python</h2>
-              <p>
-                Contoh penggunaan menggunakan Python.
-              </p>
-            </div>
-          </div>
-
-          <div className="code-card">
-            <div className="code-header">
-              <span>PYTHON</span>
-
-              <button
-                onClick={() =>
-                  copyText(pythonExample, "python")
-                }
-              >
-                {copied === "python" ? "COPIED" : "COPY"}
-              </button>
-            </div>
-
-            <pre>{pythonExample}</pre>
-          </div>
-        </section>
-
-        {/* PHP */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">10</span>
-
-            <div>
-              <h2>PHP</h2>
-              <p>
-                Contoh penggunaan menggunakan PHP.
-              </p>
-            </div>
-          </div>
-
-          <div className="code-card">
-            <div className="code-header">
-              <span>PHP</span>
-
-              <button
-                onClick={() =>
-                  copyText(phpExample, "php")
-                }
-              >
-                {copied === "php" ? "COPIED" : "COPY"}
-              </button>
-            </div>
-
-            <pre>{phpExample}</pre>
-          </div>
-        </section>
-
-        {/* CURL */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">11</span>
-
-            <div>
-              <h2>cURL</h2>
-              <p>
-                Contoh request menggunakan cURL.
-              </p>
-            </div>
-          </div>
-
-          <div className="code-card">
-            <div className="code-header">
-              <span>CURL</span>
-
-              <button
-                onClick={() =>
-                  copyText(curlExample, "curl")
-                }
-              >
-                {copied === "curl" ? "COPIED" : "COPY"}
-              </button>
-            </div>
-
-            <pre>{curlExample}</pre>
-          </div>
-        </section>
-
-        {/* BOT */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">12</span>
-
-            <div>
-              <h2>Bot Integration</h2>
-              <p>
-                Contoh sederhana integrasi dengan bot.
-              </p>
-            </div>
-          </div>
-
-          <div className="code-card">
-            <div className="code-header">
-              <span>BOT</span>
-
-              <button
-                onClick={() =>
-                  copyText(botExample, "bot")
-                }
-              >
-                {copied === "bot" ? "COPIED" : "COPY"}
-              </button>
-            </div>
-
-            <pre>{botExample}</pre>
-          </div>
-        </section>
-
-        {/* ERRORS */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">13</span>
-
-            <div>
-              <h2>Errors</h2>
-              <p>
-                Response ketika terjadi kesalahan.
-              </p>
-            </div>
-          </div>
-
-          <div className="error-list">
-
-            <div className="error-item">
-              <span className="error-code">
-                400
-              </span>
-
-              <div>
-                <strong>Bad Request</strong>
-
-                <p>
-                  URL tidak dikirim atau URL tidak valid.
-                </p>
-              </div>
-            </div>
-
-            <div className="error-item">
-              <span className="error-code">
-                404
-              </span>
-
-              <div>
-                <strong>Not Found</strong>
-
-                <p>
-                  Platform tidak didukung oleh API.
-                </p>
-              </div>
-            </div>
-
-            <div className="error-item">
-              <span className="error-code">
-                405
-              </span>
-
-              <div>
-                <strong>Method Not Allowed</strong>
-
-                <p>
-                  Method HTTP yang digunakan tidak
-                  didukung.
-                </p>
-              </div>
-            </div>
-
-            <div className="error-item">
-              <span className="error-code">
-                500
-              </span>
-
-              <div>
-                <strong>Internal Server Error</strong>
-
-                <p>
-                  Terjadi kesalahan pada server API.
-                </p>
-              </div>
-            </div>
-
-            <div className="error-item">
-              <span className="error-code">
-                502
-              </span>
-
-              <div>
-                <strong>Bad Gateway</strong>
-
-                <p>
-                  Server sumber gagal memberikan response.
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        {/* PLATFORM */}
-        <section className="docs-section">
-          <div className="section-heading">
-            <span className="number">14</span>
-
-            <div>
-              <h2>Supported Platform</h2>
-              <p>
-                Platform yang tersedia pada API.
-              </p>
-            </div>
-          </div>
-
-          <div className="platform-grid">
-
-            <div className="platform-card">
-              <span>♪</span>
-              <strong>TikTok</strong>
-              <small>Video & Audio</small>
-            </div>
-
-            <div className="platform-card">
-              <span>◎</span>
-              <strong>Instagram</strong>
-              <small>Video</small>
-            </div>
-
-            <div className="platform-card">
-              <span>f</span>
-              <strong>Facebook</strong>
-              <small>Video</small>
-            </div>
-
-            <div className="platform-card">
-              <span>▣</span>
-              <strong>CapCut</strong>
-              <small>Video</small>
-            </div>
-
-            <div className="platform-card">
-              <span>♫</span>
-              <strong>Spotify</strong>
-              <small>Audio</small>
-            </div>
-
-            <div className="platform-card">
-              <span>▶</span>
-              <strong>YouTube</strong>
-              <small>Video & Audio</small>
-            </div>
-
-          </div>
-        </section>
-
-        {/* USE RESPONSIBLY */}
-        <section className="docs-section">
-          <div className="usage-notice">
-            <div className="usage-icon">
-              ⚠️
-            </div>
-
-            <div className="usage-content">
-              <h3>Jadilah Pengguna yang Bijak</h3>
-
-              <p>
-                Gunakan API SIDOWNLOAD dengan bijak dan sesuai
-                kebutuhan. Jangan gunakan layanan secara berlebihan
-                atau untuk mengganggu layanan lainnya.
-              </p>
-
-              <p>
-                Hormati pembuat dan pemilik konten. Pastikan
-                penggunaan konten yang diproses melalui API tetap
-                sesuai dengan aturan yang berlaku.
-              </p>
-
-              <span className="usage-note">
-                Gunakan API SIDOWNLOAD dengan baik dan
-                bertanggung jawab.
-              </span>
-            </div>
-          </div>
-        </section>
+          <span>
+            Powered by DINSTORE
+          </span>
+        </footer>
 
       </div>
     </div>
