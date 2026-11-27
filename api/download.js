@@ -485,57 +485,151 @@ export default async function handler(
     }
 
     // ==========================================
-    // CAPCUT
-    // ==========================================
+// CAPCUT
+// ==========================================
 
-    else if (
-      platform === "capcut"
-    ) {
-      const ccData =
-        await safeFetchJson(
-          `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
-        );
+else if (
+  platform === "capcut"
+) {
+  const ccData =
+    await safeFetchJson(
+      `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
+    );
 
-      const root =
-        ccData?.data ||
-        ccData ||
-        {};
+  const root =
+    ccData?.data ||
+    ccData?.result ||
+    ccData ||
+    {};
 
-      thumbnail =
-        root?.coverUrl ||
-        root?.cover_url ||
-        root?.thumbnail ||
-        "";
+  thumbnail =
+    root?.coverUrl ||
+    root?.cover_url ||
+    root?.cover ||
+    root?.thumbnail ||
+    root?.thumb ||
+    "";
 
-      title =
-        root?.title ||
-        root?.name ||
-        "CapCut Template";
+  title =
+    root?.title ||
+    root?.name ||
+    root?.templateName ||
+    "CapCut Template";
 
-      author =
-        root?.authorName ||
-        root?.author ||
-        "";
+  author =
+    root?.authorName ||
+    root?.author ||
+    root?.username ||
+    "";
 
-      const capcutLink =
-        root?.originalVideoUrl ||
-        root?.videoUrl ||
-        root?.downloadUrl ||
-        root?.url;
+  duration =
+    root?.duration ||
+    "";
 
-      if (capcutLink) {
-        downloads.push({
-          url:
-            capcutLink,
+  // ========================================
+  // BERBAGAI FORMAT RESPONSE CAPCUT
+  // ========================================
 
-          text:
-            "Download Video (MP4)",
+  const capcutLinks = [
+    root?.originalVideoUrl,
+    root?.original_video_url,
+    root?.videoUrl,
+    root?.video_url,
+    root?.downloadUrl,
+    root?.download_url,
+    root?.download,
+    root?.url,
+    root?.video,
+  ];
 
-          type:
-            "capcut",
-        });
-      }
-    }
+  // ========================================
+  // CARI LINK VIDEO
+  // ========================================
+
+  for (
+    const capcutLink
+    of capcutLinks
+  ) {
+    if (!capcutLink) continue;
+
+    downloads.push({
+      url: capcutLink,
+
+      text:
+        "Download Video (MP4)",
+
+      type:
+        "capcut",
+    });
+
+    break;
+  }
+
+  // ========================================
+  // JIKA API MENGEMBALIKAN DOWNLOADS
+  // ========================================
+
+  if (
+    Array.isArray(
+      root?.downloads
+    )
+  ) {
+    root.downloads
+      .filter(
+        (item) =>
+          item?.url
+      )
+      .forEach(
+        (item) => {
+          downloads.push({
+            url:
+              item.url,
+
+            text:
+              item.quality
+                ? `Download Video (${item.quality})`
+                : "Download Video (MP4)",
+
+            type:
+              "capcut",
+          });
+        }
+      );
+  }
+
+  // ========================================
+  // JIKA API MENGEMBALIKAN RESULT ARRAY
+  // ========================================
+
+  if (
+    downloads.length === 0 &&
+    Array.isArray(
+      ccData?.result
+    )
+  ) {
+    ccData.result
+      .filter(
+        (item) =>
+          item?.url
+      )
+      .forEach(
+        (item) => {
+          downloads.push({
+            url:
+              item.url,
+
+            text:
+              item.quality
+                ? `Download Video (${item.quality})`
+                : "Download Video (MP4)",
+
+            type:
+              "capcut",
+          });
+        }
+      );
+  }
+}
 
     // ==========================================
     // FACEBOOK
