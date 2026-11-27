@@ -773,6 +773,77 @@ input {
 
 
 /* =========================================
+   HTTP STATUS
+========================================= */
+
+.http-status {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-top: 10px;
+
+  padding: 9px 10px;
+
+  background: #090b0e;
+
+  border: 1px solid #202630;
+
+  border-radius: 7px;
+}
+
+.http-status-label {
+  color: #64748b;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+}
+
+.http-status-code {
+  padding: 4px 7px;
+
+  border: 1px solid rgba(30, 215, 96, 0.18);
+
+  border-radius: 5px;
+
+  background: rgba(30, 215, 96, 0.05);
+
+  color: #1ed760;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+
+  font-size: 9px;
+
+  font-weight: 900;
+}
+
+.http-status.error .http-status-code {
+  color: #f87171;
+
+  border-color: rgba(239, 68, 68, 0.2);
+
+  background: rgba(239, 68, 68, 0.05);
+}
+
+
+/* =========================================
    NORMAL DOCUMENTATION CARD
 ========================================= */
 
@@ -1372,31 +1443,20 @@ input {
     font-size: 8.5px;
   }
 
-}
+  .http-status {
+    padding: 8px 9px;
 
+    margin-top: 9px;
+  }
 
-.http-status {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 14px;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.025);
-}
+  .http-status-label {
+    font-size: 7px;
+  }
 
-.http-status-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #777b84;
-}
+  .http-status-code {
+    padding: 4px 6px;
 
-.http-status-code {
-  font-family: monospace;
-  font-size: 12px;
-  font-weight: 700;
-  color: #1ed760;
+    font-size: 8px;
+  }
+
 }
