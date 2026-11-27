@@ -784,25 +784,35 @@ if (data.success) {
           </div>
         </section>
 
-        {/* FOOTER */}
-        <footer className="docs-footer">
-          <div className="footer-logo">
-            <span>S</span>
-          </div>
+        {/* USE RESPONSIBLY */}
+        <section className="docs-section">
+          <div className="usage-notice">
+            <div className="usage-icon">
+              ⚠️
+            </div>
 
-          <div>
-            <strong>SIDOWNLOAD API</strong>
+            <div className="usage-content">
+              <h3>Jadilah Pengguna yang Bijak</h3>
 
-            <p>
-              Simple Media Downloader API
-            </p>
-          </div>
+              <p>
+                Gunakan API SIDOWNLOAD dengan bijak dan sesuai
+                kebutuhan. Jangan gunakan layanan secara berlebihan
+                atau untuk mengganggu layanan lainnya.
+              </p>
 
-          <div className="footer-right">
-            <span>CREATED BY</span>
-            <strong>SIDOWNLOAD</strong>
+              <p>
+                Hormati pembuat dan pemilik konten. Pastikan
+                penggunaan konten yang diproses melalui API tetap
+                sesuai dengan aturan yang berlaku.
+              </p>
+
+              <span className="usage-note">
+                Gunakan API SIDOWNLOAD dengan baik dan
+                bertanggung jawab.
+              </span>
+            </div>
           </div>
-        </footer>
+        </section>
 
       </div>
     </div>
