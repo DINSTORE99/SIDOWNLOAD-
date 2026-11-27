@@ -484,7 +484,8 @@ export default async function handler(
       }
     }
 
-    // ==========================================
+    
+// ==========================================
 // CAPCUT
 // ==========================================
 
@@ -496,64 +497,51 @@ else if (
       `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
     );
 
-  const root =
-    ccData?.data ||
-    ccData?.result ||
-    ccData ||
-    {};
+  // ========================================
+  // RESPONSE API:
+  //
+  // {
+  //   "status": true,
+  //   "data": {
+  //     "code": 200,
+  //     "originalVideoUrl": "https://3bic.com/api/cdn/"
+  //   },
+  //   "timestamp": "..."
+  // }
+  // ========================================
 
-  thumbnail =
-    root?.coverUrl ||
-    root?.cover_url ||
-    root?.cover ||
-    root?.thumbnail ||
-    root?.thumb ||
-    "";
+  const capcutData =
+    ccData?.data || {};
 
-  title =
-    root?.title ||
-    root?.name ||
-    root?.templateName ||
-    "CapCut Template";
-
-  author =
-    root?.authorName ||
-    root?.author ||
-    root?.username ||
-    "";
-
-  duration =
-    root?.duration ||
+  const capcutLink =
+    capcutData?.originalVideoUrl ||
     "";
 
   // ========================================
-  // BERBAGAI FORMAT RESPONSE CAPCUT
+  // STATUS API
   // ========================================
 
-  const capcutLinks = [
-    root?.originalVideoUrl,
-    root?.original_video_url,
-    root?.videoUrl,
-    root?.video_url,
-    root?.downloadUrl,
-    root?.download_url,
-    root?.download,
-    root?.url,
-    root?.video,
-  ];
-
-  // ========================================
-  // CARI LINK VIDEO
-  // ========================================
-
-  for (
-    const capcutLink
-    of capcutLinks
+  if (
+    ccData?.status !== true
   ) {
-    if (!capcutLink) continue;
+    return res.status(404).json({
+      success: false,
 
+      platform: "capcut",
+
+      message:
+        "API CapCut gagal memproses link tersebut.",
+    });
+  }
+
+  // ========================================
+  // DOWNLOAD URL
+  // ========================================
+
+  if (capcutLink) {
     downloads.push({
-      url: capcutLink,
+      url:
+        capcutLink,
 
       text:
         "Download Video (MP4)",
@@ -561,73 +549,6 @@ else if (
       type:
         "capcut",
     });
-
-    break;
-  }
-
-  // ========================================
-  // JIKA API MENGEMBALIKAN DOWNLOADS
-  // ========================================
-
-  if (
-    Array.isArray(
-      root?.downloads
-    )
-  ) {
-    root.downloads
-      .filter(
-        (item) =>
-          item?.url
-      )
-      .forEach(
-        (item) => {
-          downloads.push({
-            url:
-              item.url,
-
-            text:
-              item.quality
-                ? `Download Video (${item.quality})`
-                : "Download Video (MP4)",
-
-            type:
-              "capcut",
-          });
-        }
-      );
-  }
-
-  // ========================================
-  // JIKA API MENGEMBALIKAN RESULT ARRAY
-  // ========================================
-
-  if (
-    downloads.length === 0 &&
-    Array.isArray(
-      ccData?.result
-    )
-  ) {
-    ccData.result
-      .filter(
-        (item) =>
-          item?.url
-      )
-      .forEach(
-        (item) => {
-          downloads.push({
-            url:
-              item.url,
-
-            text:
-              item.quality
-                ? `Download Video (${item.quality})`
-                : "Download Video (MP4)",
-
-            type:
-              "capcut",
-          });
-        }
-      );
   }
 }
 
