@@ -3,8 +3,7 @@ import "./Docs.css";
 
 const API = "https://sidownload.dinn.my.id/api/download";
 
-const EXAMPLE_URL =
-  "https://vt.tiktok.com/xxxxxx/";
+const EXAMPLE_URL = "https://vt.tiktok.com/xxxxxx/";
 
 export default function Docs() {
   const [testUrl, setTestUrl] = useState("");
@@ -33,6 +32,7 @@ export default function Docs() {
       const res = await fetch(
         `${API}?url=${encodeURIComponent(value)}`,
         {
+          method: "GET",
           headers: {
             Accept: "application/json",
           },
@@ -63,6 +63,7 @@ export default function Docs() {
   const copyEndpoint = async () => {
     try {
       await navigator.clipboard.writeText(API);
+
       setCopied(true);
 
       setTimeout(() => {
@@ -77,12 +78,27 @@ export default function Docs() {
     window.location.href = "/";
   };
 
+  const getStatusClass = () => {
+    if (!httpStatus) return "";
+
+    return httpStatus >= 400 ? "error" : "";
+  };
+
   return (
     <div className="docs-page">
+
+      {/* =========================================
+          MAIN WINDOW
+      ========================================= */}
+
       <div className="docs-window">
 
-        {/* WINDOW BAR */}
+        {/* =========================================
+            WINDOW BAR
+        ========================================= */}
+
         <div className="docs-window-bar">
+
           <div className="window-dots">
             <span className="dot red"></span>
             <span className="dot yellow"></span>
@@ -99,18 +115,27 @@ export default function Docs() {
           >
             HOME
           </button>
+
         </div>
 
-        {/* HEADER */}
+
+        {/* =========================================
+            HEADER
+        ========================================= */}
+
         <header className="docs-header">
-          <div>
-            <div className="docs-brand">
-              SIDOWNLOAD
+
+          <div className="docs-brand">
+
+            <div className="docs-brand-icon">
+              S
             </div>
 
-            <div className="docs-subtitle">
-              API DOCUMENTATION
+            <div className="docs-brand-text">
+              <b>SIDOWNLOAD</b>
+              <span>API DOCUMENTATION</span>
             </div>
+
           </div>
 
           <button
@@ -119,209 +144,326 @@ export default function Docs() {
           >
             ← Back
           </button>
+
         </header>
+
+
+        {/* =========================================
+            CONTENT
+        ========================================= */}
 
         <main className="docs-container">
 
-          {/* INTRO */}
+
+          {/* =========================================
+              INTRO
+          ========================================= */}
+
           <section className="docs-intro">
-            <div className="intro-badge">
+
+            <div className="docs-badge">
+              <i></i>
               API V1
             </div>
 
             <h1>
-              Media Downloader API
+              Media Downloader <span>API</span>
             </h1>
 
             <p>
               API sederhana untuk memproses link TikTok
-              dan mendapatkan informasi media secara
-              cepat.
+              dan mendapatkan informasi media secara cepat.
             </p>
+
           </section>
 
-          {/* API TESTER */}
-          <section className="docs-section">
-            <div className="section-number">
-              00
-            </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                API Tester
+          {/* =========================================
+              API TESTER
+          ========================================= */}
+
+          <section className="terminal-card">
+
+            <div className="terminal-top">
+
+              <div className="terminal-dots">
+                <i></i>
+                <i></i>
+                <i></i>
               </div>
 
-              <p>
-                Masukkan link TikTok untuk mencoba API
-                secara langsung.
-              </p>
+              <span>
+                api-tester
+              </span>
 
-              <div className="api-tester">
-                <div className="tester-input-row">
-                  <input
-                    type="text"
-                    value={testUrl}
-                    onChange={(e) =>
-                      setTestUrl(e.target.value)
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        runTest();
-                      }
-                    }}
-                    placeholder="https://vt.tiktok.com/..."
-                  />
+              <button
+                className="terminal-copy"
+                onClick={copyEndpoint}
+              >
+                {copied ? "COPIED" : "COPY API"}
+              </button>
 
-                  <button
-                    onClick={runTest}
-                    disabled={loading}
-                  >
-                    {loading ? "TEST..." : "TEST API"}
-                  </button>
-                </div>
+            </div>
+
+
+            <div className="terminal-body">
+
+              <div className="terminal-command">
+                <span className="terminal-prompt">
+                  $
+                </span>
+
+                <span>
+                  sidownload api --test
+                </span>
+              </div>
+
+
+              <label className="terminal-label">
+                TIKTOK URL
+              </label>
+
+
+              <input
+                className="terminal-input"
+                type="text"
+                value={testUrl}
+                onChange={(e) =>
+                  setTestUrl(e.target.value)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    runTest();
+                  }
+                }}
+                placeholder="https://vt.tiktok.com/..."
+              />
+
+
+              <div className="tester-actions">
 
                 <button
-                  className="example-button"
+                  className="terminal-btn"
+                  onClick={runTest}
+                  disabled={loading}
+                >
+                  {loading ? "PROCESSING..." : "TEST API"}
+                </button>
+
+                <button
+                  className="terminal-btn secondary"
                   onClick={loadExample}
+                  disabled={loading}
                 >
-                  Gunakan Contoh
+                  CONTOH
                 </button>
 
-                {testError && (
-                  <div className="test-error">
+              </div>
+
+
+              {/* ERROR */}
+
+              {testError && (
+                <div className="terminal-error">
+                  <span>✕</span>
+
+                  <span>
                     {testError}
-                  </div>
-                )}
+                  </span>
+                </div>
+              )}
 
-                {httpStatus && (
-                  <div className="http-status">
-                    <span className="http-status-label">
-                      HTTP STATUS
-                    </span>
 
-                    <span className="http-status-code">
-                      {httpStatus}
-                    </span>
-                  </div>
-                )}
+              {/* HTTP STATUS */}
 
-                {response && (
-                  <div className="tester-response">
-                    <div className="response-header">
-                      <span>RESPONSE</span>
-
-                      <span
-                        className={
-                          response.success
-                            ? "response-success"
-                            : "response-failed"
-                        }
-                      >
-                        {response.success
-                          ? "SUCCESS"
-                          : "FAILED"}
-                      </span>
-                    </div>
-
-                    <pre>
-                      {JSON.stringify(
-                        response,
-                        null,
-                        2
-                      )}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* 01 */}
-          <section className="docs-section">
-            <div className="section-number">
-              01
-            </div>
-
-            <div className="section-content">
-              <div className="section-title">
-                API Endpoint
-              </div>
-
-              <p>
-                Gunakan endpoint berikut untuk
-                mengakses API SIDOWNLOAD.
-              </p>
-
-              <div className="code-box">
-                <code>{API}</code>
-
-                <button
-                  className="copy-button"
-                  onClick={copyEndpoint}
+              {httpStatus && (
+                <div
+                  className={`http-status ${getStatusClass()}`}
                 >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-              </div>
+                  <span className="http-status-label">
+                    HTTP STATUS
+                  </span>
+
+                  <span className="http-status-code">
+                    {httpStatus}
+                  </span>
+                </div>
+              )}
+
+
+              {/* RESPONSE */}
+
+              {response && (
+                <div className="terminal-response">
+
+                  <div className="response-header">
+
+                    <span>
+                      RESPONSE
+                    </span>
+
+                    <span
+                      className={
+                        response.success
+                          ? "status-ok"
+                          : "status-bad"
+                      }
+                    >
+                      {response.success
+                        ? "SUCCESS"
+                        : "FAILED"}
+                    </span>
+
+                  </div>
+
+                  <pre>
+                    {JSON.stringify(
+                      response,
+                      null,
+                      2
+                    )}
+                  </pre>
+
+                </div>
+              )}
+
             </div>
+
           </section>
 
-          {/* 02 */}
-          <section className="docs-section">
-            <div className="section-number">
-              02
+
+          {/* =========================================
+              01 API ENDPOINT
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>01</small>
+
+              <h2>
+                API Endpoint
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
+            <p>
+              Gunakan endpoint berikut untuk mengakses
+              API SIDOWNLOAD.
+            </p>
+
+            <div className="endpoint">
+
+              <strong>
+                GET
+              </strong>
+
+              <code>
+                {API}
+              </code>
+
+            </div>
+
+            <div className="note">
+
+              <b>
+                Endpoint utama
+              </b>
+
+              <span>
+                Gunakan parameter url untuk memasukkan
+                link TikTok.
+              </span>
+
+            </div>
+
+          </section>
+
+
+          {/* =========================================
+              02 PARAMETER
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>02</small>
+
+              <h2>
                 Parameter
-              </div>
+              </h2>
+            </div>
 
-              <div className="parameter-box">
-                <div className="parameter-name">
-                  url
-                </div>
+            <div className="parameter">
 
-                <div className="parameter-type">
+              <code>
+                url
+              </code>
+
+              <div>
+
+                <b>
                   string
-                </div>
+                </b>
 
-                <div className="parameter-desc">
+                <p>
                   URL video TikTok yang ingin diproses.
-                </div>
+                </p>
+
               </div>
+
+              <span className="required">
+                REQUIRED
+              </span>
+
             </div>
+
           </section>
 
-          {/* 03 */}
-          <section className="docs-section">
-            <div className="section-number">
-              03
-            </div>
 
-            <div className="section-content">
-              <div className="section-title">
+          {/* =========================================
+              03 REQUEST
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>03</small>
+
+              <h2>
                 Contoh Request
-              </div>
-
-              <pre className="code-block">
-{`GET ${API}?url=https%3A%2F%2Fvt.tiktok.com%2Fxxxxxx%2F`}
-              </pre>
+              </h2>
             </div>
+
+            <p>
+              Contoh request menggunakan link TikTok.
+            </p>
+
+            <div className="code">
+
+              <pre>{`GET ${API}?url=https%3A%2F%2Fvt.tiktok.com%2Fxxxxxx%2F`}</pre>
+
+            </div>
+
           </section>
 
-          {/* 04 */}
-          <section className="docs-section">
-            <div className="section-number">
-              04
+
+          {/* =========================================
+              04 JSON RESPONSE
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>04</small>
+
+              <h2>
+                JSON Response
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                JSON Response
-              </div>
+            <div className="code">
 
-              <pre className="code-block">
-{`{
+              <pre>{`{
   "success": true,
   "creator": "DINSTORE",
   "platform": "tiktok",
@@ -340,49 +482,61 @@ export default function Docs() {
       "type": "audio"
     }
   ]
-}`}
-              </pre>
+}`}</pre>
+
             </div>
+
           </section>
 
-          {/* 05 */}
-          <section className="docs-section">
-            <div className="section-number">
-              05
+
+          {/* =========================================
+              05 DOWNLOADS
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>05</small>
+
+              <h2>
+                Downloads
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                Downloads
-              </div>
+            <p>
+              Data download tersedia pada array{" "}
+              <code>downloads</code>.
+            </p>
 
-              <p>
-                Data download tersedia pada array
-                <code> downloads</code>.
-              </p>
+            <div className="code">
 
-              <pre className="code-block">
-{`data.downloads.forEach((item) => {
+              <pre>{`data.downloads.forEach((item) => {
   console.log(item.text);
   console.log(item.type);
-});`}
-              </pre>
+});`}</pre>
+
             </div>
+
           </section>
 
-          {/* 06 */}
-          <section className="docs-section">
-            <div className="section-number">
-              06
+
+          {/* =========================================
+              06 JAVASCRIPT
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>06</small>
+
+              <h2>
+                JavaScript
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                JavaScript
-              </div>
+            <div className="code">
 
-              <pre className="code-block">
-{`const url =
+              <pre>{`const url =
   "https://vt.tiktok.com/xxxxxx/";
 
 const response = await fetch(
@@ -402,43 +556,55 @@ if (data.success) {
   });
 } else {
   console.log(data.message);
-}`}
-              </pre>
+}`}</pre>
+
             </div>
+
           </section>
 
-          {/* 07 */}
-          <section className="docs-section">
-            <div className="section-number">
-              07
-            </div>
 
-            <div className="section-content">
-              <div className="section-title">
+          {/* =========================================
+              07 NODE.JS
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>07</small>
+
+              <h2>
                 Node.js
-              </div>
-
-              <pre className="code-block">
-{`const result = await download(
-  "https://vt.tiktok.com/xxxxxx/"
-);`}
-              </pre>
+              </h2>
             </div>
+
+            <div className="code">
+
+              <pre>{`const result = await download(
+  "https://vt.tiktok.com/xxxxxx/"
+);`}</pre>
+
+            </div>
+
           </section>
 
-          {/* 08 */}
-          <section className="docs-section">
-            <div className="section-number">
-              08
+
+          {/* =========================================
+              08 PYTHON
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>08</small>
+
+              <h2>
+                Python
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                Python
-              </div>
+            <div className="code">
 
-              <pre className="code-block">
-{`import requests
+              <pre>{`import requests
 
 url = "https://vt.tiktok.com/xxxxxx/"
 
@@ -459,24 +625,30 @@ if data["success"]:
         print(item["text"])
         print(item["type"])
 else:
-    print(data["message"])`}
-              </pre>
+    print(data["message"])`}</pre>
+
             </div>
+
           </section>
 
-          {/* 09 */}
-          <section className="docs-section">
-            <div className="section-number">
-              09
+
+          {/* =========================================
+              09 PHP
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>09</small>
+
+              <h2>
+                PHP
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                PHP
-              </div>
+            <div className="code">
 
-              <pre className="code-block">
-{`<?php
+              <pre>{`<?php
 
 $url =
   "https://vt.tiktok.com/xxxxxx/";
@@ -498,46 +670,58 @@ if ($data["success"]) {
   echo $data["title"];
 } else {
   echo $data["message"];
-}`}
-              </pre>
+}`}</pre>
+
             </div>
+
           </section>
 
-          {/* 10 */}
-          <section className="docs-section">
-            <div className="section-number">
-              10
-            </div>
 
-            <div className="section-content">
-              <div className="section-title">
+          {/* =========================================
+              10 CURL
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>10</small>
+
+              <h2>
                 cURL
-              </div>
-
-              <pre className="code-block">
-{`curl "${API}?url=https%3A%2F%2Fvt.tiktok.com%2Fxxxxxx%2F"`}
-              </pre>
+              </h2>
             </div>
+
+            <div className="code">
+
+              <pre>{`curl "${API}?url=https%3A%2F%2Fvt.tiktok.com%2Fxxxxxx%2F"`}</pre>
+
+            </div>
+
           </section>
 
-          {/* 11 */}
-          <section className="docs-section">
-            <div className="section-number">
-              11
+
+          {/* =========================================
+              11 BOT
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>11</small>
+
+              <h2>
+                Integrasi Bot
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                Integrasi Bot
-              </div>
+            <p>
+              Contoh mengambil informasi download
+              untuk digunakan pada bot.
+            </p>
 
-              <p>
-                Contoh mengambil informasi download
-                untuk digunakan pada bot.
-              </p>
+            <div className="code">
 
-              <pre className="code-block">
-{`const response = await fetch(
+              <pre>{`const response = await fetch(
   "${API}?url=" +
   encodeURIComponent(url)
 );
@@ -551,68 +735,192 @@ if (data.success) {
       item.type
     );
   }
-}`}
-              </pre>
+}`}</pre>
+
             </div>
+
           </section>
 
-          {/* 12 */}
-          <section className="docs-section">
-            <div className="section-number">
-              12
+
+          {/* =========================================
+              12 ERROR
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>12</small>
+
+              <h2>
+                Error Response
+              </h2>
             </div>
 
-            <div className="section-content">
-              <div className="section-title">
-                Error Response
-              </div>
+            <p className="error-tip">
+              Response ketika URL tidak dikirim atau
+              tidak dapat diproses.
+            </p>
 
-              <pre className="code-block">
-{`{
+            <div className="code">
+
+              <pre>{`{
   "success": false,
   "creator": "DINSTORE",
   "message": "URL tidak boleh kosong."
-}`}
-              </pre>
+}`}</pre>
+
             </div>
+
           </section>
 
-          {/* 13 */}
-          <section className="docs-section">
-            <div className="section-number">
-              13
-            </div>
 
-            <div className="section-content">
-              <div className="section-title">
+          {/* =========================================
+              13 PLATFORMS
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>13</small>
+
+              <h2>
                 Platform
+              </h2>
+            </div>
+
+            <div className="platforms">
+
+              <div>
+                TikTok
               </div>
 
-              <div className="platform-list">
-                <span>TikTok</span>
-                <span>Instagram</span>
-                <span>YouTube</span>
-                <span>Facebook</span>
-                <span>CapCut</span>
-                <span>Spotify</span>
+              <div>
+                Instagram
               </div>
+
+              <div>
+                YouTube
+              </div>
+
+              <div>
+                Facebook
+              </div>
+
+              <div>
+                CapCut
+              </div>
+
+              <div>
+                Spotify
+              </div>
+
             </div>
+
           </section>
+
+
+          {/* =========================================
+              USAGE NOTICE
+          ========================================= */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>!</small>
+
+              <h2>
+                Jadilah Pengguna yang Bijak
+              </h2>
+            </div>
+
+            <p>
+              Gunakan API SIDOWNLOAD dengan bijak dan
+              sesuai kebutuhan. Jangan gunakan layanan
+              secara berlebihan atau untuk mengganggu
+              layanan lainnya.
+            </p>
+
+            <p>
+              Hormati pembuat dan pemilik konten.
+              Pastikan penggunaan konten yang diproses
+              melalui API tetap sesuai dengan aturan
+              yang berlaku.
+            </p>
+
+            <div className="note">
+
+              <b>
+                Gunakan API SIDOWNLOAD dengan baik.
+              </b>
+
+              <span>
+                Gunakan layanan secara bertanggung jawab.
+              </span>
+
+            </div>
+
+          </section>
+
+
+          {/* =========================================
+              FOOTER
+          ========================================= */}
+
+          <footer className="docs-footer">
+
+            <div className="footer-terminal">
+
+              <span className="footer-prompt">
+                $
+              </span>
+
+              <span>
+                sidownload status:
+              </span>
+
+              <span className="footer-online">
+                ONLINE
+              </span>
+
+            </div>
+
+
+            <div className="footer-brand">
+
+              <div className="docs-brand-icon">
+                S
+              </div>
+
+              <div>
+
+                <b>
+                  SIDOWNLOAD
+                </b>
+
+                <span>
+                  MEDIA DOWNLOADER API
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <p>
+              Simple • Fast • Free
+            </p>
+
+
+            <button onClick={goHome}>
+              ← Kembali ke SIDOWNLOAD
+            </button>
+
+          </footer>
 
         </main>
 
-        {/* FOOTER */}
-        <footer className="docs-footer">
-          <div>
-            SIDOWNLOAD API
-          </div>
-
-          <span>
-            Powered by DINSTORE
-          </span>
-        </footer>
-
       </div>
+
     </div>
   );
 }
