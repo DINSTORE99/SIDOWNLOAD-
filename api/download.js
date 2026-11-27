@@ -3,6 +3,12 @@ export const config = {
 };
 
 // ==========================================
+// CREATOR
+// ==========================================
+
+const CREATOR = "DINSTORE";
+
+// ==========================================
 // EXTRACT URL
 // ==========================================
 
@@ -180,7 +186,7 @@ export default async function handler(
   ) {
     return res.status(405).json({
       success: false,
-
+      creator: CREATOR,
       message:
         "Metode tidak diizinkan.",
     });
@@ -203,7 +209,7 @@ export default async function handler(
   if (!cleanUrl) {
     return res.status(400).json({
       success: false,
-
+      creator: CREATOR,
       message:
         "URL tidak boleh kosong.",
     });
@@ -219,7 +225,7 @@ export default async function handler(
   if (!platform) {
     return res.status(400).json({
       success: false,
-
+      creator: CREATOR,
       message:
         "Platform tidak didukung.",
     });
@@ -302,8 +308,6 @@ export default async function handler(
           }
         }
 
-        // MP4
-
         if (
           mp4Data?.result?.download
         ) {
@@ -318,8 +322,6 @@ export default async function handler(
               "youtube",
           });
         }
-
-        // MP3
 
         if (
           mp3Data?.result?.download
@@ -416,10 +418,6 @@ export default async function handler(
         root?.author?.nickname ||
         "";
 
-      // ======================================
-      // STATS
-      // ======================================
-
       const stat = [];
 
       if (
@@ -441,10 +439,6 @@ export default async function handler(
       stats =
         stat.join("   ");
 
-      // ======================================
-      // VIDEO
-      // ======================================
-
       const videoLink =
         root?.no_watermark_link_hd ||
         root?.no_watermark_link ||
@@ -463,10 +457,6 @@ export default async function handler(
             "tiktok",
         });
       }
-
-      // ======================================
-      // AUDIO
-      // ======================================
 
       const audioLink =
         root?.music_link ||
@@ -499,25 +489,11 @@ export default async function handler(
           `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
         );
 
-      // ======================================
-      // RESPONSE:
-      //
-      // {
-      //   "status": true,
-      //   "data": {
-      //     "code": 200,
-      //     "originalVideoUrl":
-      //       "https://3bic.com/api/cdn/"
-      //   }
-      // }
-      // ======================================
-
       if (!ccData) {
         return res.status(502).json({
           success: false,
-
+          creator: CREATOR,
           platform: "capcut",
-
           message:
             "Server CapCut tidak memberikan response.",
         });
@@ -528,9 +504,8 @@ export default async function handler(
       ) {
         return res.status(404).json({
           success: false,
-
+          creator: CREATOR,
           platform: "capcut",
-
           message:
             "API CapCut gagal memproses link tersebut.",
         });
@@ -549,9 +524,8 @@ export default async function handler(
       if (!capcutLink) {
         return res.status(404).json({
           success: false,
-
+          creator: CREATOR,
           platform: "capcut",
-
           message:
             "Video CapCut tidak ditemukan.",
         });
@@ -617,10 +591,6 @@ export default async function handler(
         root?.duration ||
         "";
 
-      // ======================================
-      // DOWNLOADS ARRAY
-      // ======================================
-
       if (
         Array.isArray(
           root?.downloads
@@ -645,13 +615,7 @@ export default async function handler(
               });
             }
           );
-      }
-
-      // ======================================
-      // HD / SD
-      // ======================================
-
-      else {
+      } else {
         if (root?.hd) {
           downloads.push({
             url:
@@ -713,11 +677,6 @@ export default async function handler(
         root?.image ||
         "";
 
-      // ======================================
-      // FORMAT BARU
-      // data.media[]
-      // ======================================
-
       if (
         Array.isArray(
           root?.media
@@ -755,8 +714,6 @@ export default async function handler(
                 : ""
             );
 
-          // VIDEO
-
           if (
             mediaType === "mp4" ||
             mediaType === "video" ||
@@ -780,8 +737,6 @@ export default async function handler(
             continue;
           }
 
-          // AUDIO
-
           if (
             mediaType === "mp3" ||
             mediaType === "m4a" ||
@@ -804,8 +759,6 @@ export default async function handler(
             continue;
           }
 
-          // FORMAT LAIN
-
           downloads.push({
             url:
               mediaUrl,
@@ -820,10 +773,6 @@ export default async function handler(
           });
         }
       }
-
-      // ======================================
-      // FORMAT LAMA
-      // ======================================
 
       if (
         downloads.length === 0
@@ -857,10 +806,6 @@ export default async function handler(
           });
         }
       }
-
-      // ======================================
-      // ROOT ARRAY
-      // ======================================
 
       if (
         downloads.length === 0 &&
@@ -925,9 +870,8 @@ export default async function handler(
     ) {
       return res.status(404).json({
         success: false,
-
+        creator: CREATOR,
         platform,
-
         message:
           "Server penyedia gagal memproses media ini atau link tidak valid.",
       });
@@ -939,19 +883,13 @@ export default async function handler(
 
     return res.status(200).json({
       success: true,
-
+      creator: CREATOR,
       platform,
-
       title,
-
       thumbnail,
-
       author,
-
       duration,
-
       stats,
-
       downloads:
         uniqueDownloads,
     });
@@ -964,9 +902,8 @@ export default async function handler(
 
     return res.status(500).json({
       success: false,
-
+      creator: CREATOR,
       platform,
-
       message:
         "Terjadi gangguan saat memproses request di server.",
     });
