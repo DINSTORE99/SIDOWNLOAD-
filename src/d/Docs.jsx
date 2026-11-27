@@ -775,48 +775,61 @@ if (data.success) {
 
 
           {/* =========================================
-              13 PLATFORMS
-          ========================================= */}
+    13 HTTP STATUS
+========================================= */}
 
-          <section className="docs-card">
+<section className="docs-card">
 
-            <div className="docs-title">
-              <small>13</small>
+  <div className="docs-title">
+    <small>13</small>
 
-              <h2>
-                Platform
-              </h2>
-            </div>
+    <h2>
+      HTTP Status
+    </h2>
+  </div>
 
-            <div className="platforms">
+  <p>
+    HTTP status menunjukkan hasil dari request
+    yang dikirim ke API SIDOWNLOAD.
+  </p>
 
-              <div>
-                TikTok
-              </div>
+  <div className="platforms">
 
-              <div>
-                Instagram
-              </div>
+    <div>
+      <strong style={{ color: "#1ed760" }}>
+        200
+      </strong>
+      <br />
+      OK
+    </div>
 
-              <div>
-                YouTube
-              </div>
+    <div>
+      <strong style={{ color: "#f59e0b" }}>
+        400
+      </strong>
+      <br />
+      Bad Request
+    </div>
 
-              <div>
-                Facebook
-              </div>
+    <div>
+      <strong style={{ color: "#f59e0b" }}>
+        404
+      </strong>
+      <br />
+      Not Found
+    </div>
 
-              <div>
-                CapCut
-              </div>
+    <div>
+      <strong style={{ color: "#f87171" }}>
+        500
+      </strong>
+      <br />
+      Server Error
+    </div>
 
-              <div>
-                Spotify
-              </div>
+  </div>
 
-            </div>
-
-          </section>
+</section>
 
 
           {/* =========================================
