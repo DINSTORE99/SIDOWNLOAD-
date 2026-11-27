@@ -1,10 +1,11 @@
 import { useState } from "react";
 import "./Docs.css";
 
-const API = "https://sidownload.dinn.my.id/api/download";
+const API =
+  "https://sidownload.dinn.my.id/api/download";
 
 const EXAMPLE_URL =
-  "https://www.instagram.com/reel/xxxxx/";
+  "https://vt.tiktok.com/ZSsS9roM1/";
 
 export default function Docs() {
   const [testUrl, setTestUrl] = useState("");
@@ -14,13 +15,21 @@ export default function Docs() {
   const [testError, setTestError] = useState("");
   const [copied, setCopied] = useState(false);
 
+  // ==========================================
+  // TEST API
+  // ==========================================
+
   const runTest = async () => {
     const value = testUrl.trim();
 
     if (!value) {
-      setTestError("Masukkan URL media terlebih dahulu.");
+      setTestError(
+        "Masukkan URL TikTok terlebih dahulu."
+      );
+
       setResponse(null);
       setHttpStatus(null);
+
       return;
     }
 
@@ -51,6 +60,7 @@ export default function Docs() {
       } catch {
         data = {
           success: false,
+          creator: "DINSTORE",
           message: "Response bukan JSON.",
           raw,
         };
@@ -58,6 +68,8 @@ export default function Docs() {
 
       setResponse(data);
     } catch (error) {
+      console.error(error);
+
       setTestError(
         "Tidak dapat terhubung ke API. Pastikan endpoint sedang online."
       );
@@ -66,6 +78,10 @@ export default function Docs() {
     }
   };
 
+  // ==========================================
+  // EXAMPLE
+  // ==========================================
+
   const loadExample = () => {
     setTestUrl(EXAMPLE_URL);
     setTestError("");
@@ -73,9 +89,14 @@ export default function Docs() {
     setHttpStatus(null);
   };
 
+  // ==========================================
+  // COPY API
+  // ==========================================
+
   const copyEndpoint = async () => {
     try {
       await navigator.clipboard.writeText(API);
+
       setCopied(true);
 
       setTimeout(() => {
@@ -85,6 +106,10 @@ export default function Docs() {
       setCopied(false);
     }
   };
+
+  // ==========================================
+  // HOME
+  // ==========================================
 
   const goHome = () => {
     window.location.href = "/";
@@ -96,9 +121,13 @@ export default function Docs() {
       {/* =========================================
           TERMINAL / BROWSER WINDOW
       ========================================== */}
+
       <div className="docs-window">
 
-        {/* WINDOW BAR */}
+        {/* =========================================
+            WINDOW BAR
+        ========================================== */}
+
         <header className="docs-window-bar">
 
           <div className="window-dots">
@@ -124,6 +153,7 @@ export default function Docs() {
         {/* =========================================
             PAGE HEADER
         ========================================== */}
+
         <header className="docs-header">
 
           <div
@@ -157,6 +187,7 @@ export default function Docs() {
           {/* =========================================
               INTRO
           ========================================== */}
+
           <section className="docs-intro">
 
             <span className="docs-badge">
@@ -171,8 +202,9 @@ export default function Docs() {
             </h1>
 
             <p>
-              Dokumentasi penggunaan Public API SIDOWNLOAD
-              untuk website, aplikasi, bot, dan project lainnya.
+              Dokumentasi penggunaan Public API
+              SIDOWNLOAD untuk website, aplikasi,
+              bot, dan project lainnya.
             </p>
 
           </section>
@@ -181,6 +213,7 @@ export default function Docs() {
           {/* =========================================
               API TESTER
           ========================================== */}
+
           <section className="terminal-card tester-card">
 
             <div className="terminal-top">
@@ -199,7 +232,9 @@ export default function Docs() {
                 onClick={copyEndpoint}
                 className="terminal-copy"
               >
-                {copied ? "Copied!" : "Copy API"}
+                {copied
+                  ? "Copied!"
+                  : "Copy API"}
               </button>
 
             </div>
@@ -219,7 +254,7 @@ export default function Docs() {
 
 
               <label className="terminal-label">
-                MEDIA URL
+                TIKTOK URL
               </label>
 
 
@@ -227,15 +262,20 @@ export default function Docs() {
                 type="url"
                 value={testUrl}
                 onChange={(e) => {
-                  setTestUrl(e.target.value);
+                  setTestUrl(
+                    e.target.value
+                  );
+
                   setTestError("");
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (
+                    e.key === "Enter"
+                  ) {
                     runTest();
                   }
                 }}
-                placeholder="https://www.instagram.com/reel/..."
+                placeholder="https://vt.tiktok.com/..."
                 className="terminal-input"
               />
 
@@ -270,7 +310,8 @@ export default function Docs() {
               )}
 
 
-              {(response || httpStatus) && (
+              {(response ||
+                httpStatus) && (
                 <div className="terminal-response">
 
                   <div className="response-header">
@@ -314,6 +355,7 @@ export default function Docs() {
           {/* =========================================
               01 ENDPOINT
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
@@ -322,8 +364,8 @@ export default function Docs() {
             </div>
 
             <p>
-              Gunakan endpoint berikut untuk memproses
-              link media.
+              Gunakan endpoint berikut untuk
+              memproses link TikTok.
             </p>
 
             <div className="endpoint">
@@ -345,8 +387,8 @@ export default function Docs() {
               </b>
 
               <span>
-                API dapat digunakan langsung tanpa
-                authentication.
+                API dapat digunakan langsung
+                tanpa authentication.
               </span>
 
             </div>
@@ -357,6 +399,7 @@ export default function Docs() {
           {/* =========================================
               02 PARAMETER
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
@@ -374,7 +417,8 @@ export default function Docs() {
                 <b>String</b>
 
                 <p>
-                  URL media yang ingin diproses.
+                  URL TikTok yang ingin
+                  diproses.
                 </p>
               </div>
 
@@ -390,6 +434,7 @@ export default function Docs() {
           {/* =========================================
               03 REQUEST
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
@@ -399,7 +444,7 @@ export default function Docs() {
 
             <div className="code">
 
-              <pre>{`GET ${API}?url=https%3A%2F%2Fwww.instagram.com%2Freel%2Fxxxxx%2F`}</pre>
+              <pre>{`GET ${API}?url=https%3A%2F%2Fvt.tiktok.com%2FZSsS9roM1%2F`}</pre>
 
             </div>
 
@@ -407,8 +452,9 @@ export default function Docs() {
 
 
           {/* =========================================
-              04 JSON
+              04 JSON RESPONSE
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
@@ -418,24 +464,30 @@ export default function Docs() {
 
             <p>
               Jika berhasil, API akan mengembalikan
-              JSON seperti berikut:
+              response JSON seperti berikut:
             </p>
 
             <div className="code">
 
               <pre>{`{
   "success": true,
-  "platform": "instagram",
-  "title": "Judul media",
-  "thumbnail": "",
-  "author": "username",
+  "creator": "DINSTORE",
+  "platform": "tiktok",
+  "title": "❤️‍🔥 #dancer #dance #foryoupage #jj #capcut",
+  "thumbnail": "https://example.com/thumbnail.jpg",
+  "author": "sell_gull",
   "duration": "",
-  "stats": "",
+  "stats": "👁️ 514.9K   ❤️ 46.5K",
   "downloads": [
     {
       "url": "https://example.com/video.mp4",
-      "text": "Download Video (720p)",
-      "type": "instagram"
+      "text": "Download Video (No Watermark)",
+      "type": "tiktok"
+    },
+    {
+      "url": "https://example.com/audio.mp3",
+      "text": "Download Audio (MP3)",
+      "type": "audio"
     }
   ]
 }`}</pre>
@@ -446,23 +498,65 @@ export default function Docs() {
 
 
           {/* =========================================
-              05 DOWNLOADS
+              05 CREATOR
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
               <small>05</small>
+              <h2>Creator</h2>
+            </div>
+
+            <p>
+              Setiap response API memiliki
+              identitas pembuat API.
+            </p>
+
+            <div className="code">
+
+              <pre>{`{
+  "creator": "DINSTORE"
+}`}</pre>
+
+            </div>
+
+            <div className="note">
+
+              <b>
+                DINSTORE
+              </b>
+
+              <span>
+                Identitas creator dari Public API
+                SIDOWNLOAD.
+              </span>
+
+            </div>
+
+          </section>
+
+
+          {/* =========================================
+              06 DOWNLOADS
+          ========================================== */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>06</small>
               <h2>Downloads</h2>
             </div>
 
             <p>
-              Hasil download berada di dalam array
-              <code> downloads</code>.
+              Hasil download berada di dalam
+              array <code>downloads</code>.
             </p>
 
             <div className="code">
 
               <pre>{`data.downloads.forEach((item) => {
+  console.log(item.text);
   console.log(item.url);
 });`}</pre>
 
@@ -472,34 +566,51 @@ export default function Docs() {
 
 
           {/* =========================================
-              06 JAVASCRIPT
+              07 JAVASCRIPT
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>06</small>
+              <small>07</small>
               <h2>JavaScript</h2>
             </div>
 
             <div className="code">
 
               <pre>{`const url =
-  "https://www.instagram.com/reel/xxxxx/";
+  "https://vt.tiktok.com/ZSsS9roM1/";
 
 const response = await fetch(
   "${API}?url=" +
   encodeURIComponent(url)
 );
 
-const data = await response.json();
+const data =
+  await response.json();
 
 if (data.success) {
 
-  console.log("Judul:", data.title);
+  console.log(
+    "Creator:",
+    data.creator
+  );
+
+  console.log(
+    "Judul:",
+    data.title
+  );
+
+  console.log(
+    "Author:",
+    data.author
+  );
 
   data.downloads.forEach((item) => {
+
     console.log(item.text);
     console.log(item.url);
+
   });
 
 } else {
@@ -514,12 +625,13 @@ if (data.success) {
 
 
           {/* =========================================
-              07 NODE JS
+              08 NODE JS
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>07</small>
+              <small>08</small>
               <h2>Node.js</h2>
             </div>
 
@@ -540,9 +652,10 @@ if (data.success) {
   return data;
 }
 
-const result = await download(
-  "https://www.instagram.com/reel/xxxxx/"
-);
+const result =
+  await download(
+    "https://vt.tiktok.com/ZSsS9roM1/"
+  );
 
 console.log(result);`}</pre>
 
@@ -552,12 +665,13 @@ console.log(result);`}</pre>
 
 
           {/* =========================================
-              08 PYTHON
+              09 PYTHON
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>08</small>
+              <small>09</small>
               <h2>Python</h2>
             </div>
 
@@ -565,7 +679,7 @@ console.log(result);`}</pre>
 
               <pre>{`import requests
 
-url = "https://www.instagram.com/reel/xxxxx/"
+url = "https://vt.tiktok.com/ZSsS9roM1/"
 
 response = requests.get(
     "${API}",
@@ -579,8 +693,23 @@ data = response.json()
 print(data)
 
 if data["success"]:
+
+    print(
+        "Creator:",
+        data["creator"]
+    )
+
+    print(
+        "Title:",
+        data["title"]
+    )
+
     for item in data["downloads"]:
-        print(item["url"])`}</pre>
+        print(item["url"])
+
+else:
+
+    print(data["message"])`}</pre>
 
             </div>
 
@@ -588,12 +717,13 @@ if data["success"]:
 
 
           {/* =========================================
-              09 PHP
+              10 PHP
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>09</small>
+              <small>10</small>
               <h2>PHP</h2>
             </div>
 
@@ -602,7 +732,7 @@ if data["success"]:
               <pre>{`<?php
 
 $url =
-  "https://www.instagram.com/reel/xxxxx/";
+  "https://vt.tiktok.com/ZSsS9roM1/";
 
 $api =
   "${API}?url=" .
@@ -612,9 +742,27 @@ $response =
   file_get_contents($api);
 
 $data =
-  json_decode($response, true);
+  json_decode(
+    $response,
+    true
+  );
 
 print_r($data);
+
+if ($data["success"]) {
+
+  echo $data["title"];
+
+  foreach (
+    $data["downloads"]
+    as $item
+  ) {
+
+    echo $item["url"];
+
+  }
+
+}
 
 ?>`}</pre>
 
@@ -624,18 +772,19 @@ print_r($data);
 
 
           {/* =========================================
-              10 CURL
+              11 CURL
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>10</small>
+              <small>11</small>
               <h2>cURL</h2>
             </div>
 
             <div className="code">
 
-              <pre>{`curl "${API}?url=https%3A%2F%2Fwww.instagram.com%2Freel%2Fxxxxx%2F"`}</pre>
+              <pre>{`curl "${API}?url=https%3A%2F%2Fvt.tiktok.com%2FZSsS9roM1%2F"`}</pre>
 
             </div>
 
@@ -643,19 +792,19 @@ print_r($data);
 
 
           {/* =========================================
-              11 BOT
+              12 BOT
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>11</small>
+              <small>12</small>
               <h2>Integrasi Bot</h2>
             </div>
 
             <p>
-              API dapat digunakan pada bot. Bot menerima
-              URL dari pengguna kemudian mengambil hasil
-              download.
+              API dapat digunakan pada bot WhatsApp,
+              Telegram, Discord, dan bot lainnya.
             </p>
 
             <div className="code">
@@ -671,17 +820,43 @@ const data =
   await response.json();
 
 if (!data.success) {
-  return "❌ Gagal memproses link.";
+
+  return "❌ " + data.message;
+
 }
 
-for (const item of data.downloads) {
+let message =
+  "✅ TikTok berhasil diproses\\\\n\\\\n";
 
-  console.log(
-    item.text,
-    item.url
-  );
+message +=
+  "Creator: " +
+  data.creator +
+  "\\\\n";
 
-}`}</pre>
+message +=
+  "Judul: " +
+  data.title +
+  "\\\\n";
+
+message +=
+  "Author: " +
+  data.author +
+  "\\\\n\\\\n";
+
+for (
+  const item
+  of data.downloads
+) {
+
+  message +=
+    item.text +
+    ":\\\\n" +
+    item.url +
+    "\\\\n\\\\n";
+
+}
+
+console.log(message);`}</pre>
 
             </div>
 
@@ -689,41 +864,116 @@ for (const item of data.downloads) {
 
 
           {/* =========================================
-              12 ERROR
+              13 ERROR
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>12</small>
+              <small>13</small>
               <h2>Error Response</h2>
             </div>
+
+            <p>
+              Jika terjadi kesalahan, API akan
+              mengembalikan response seperti berikut:
+            </p>
 
             <div className="code">
 
               <pre>{`{
   "success": false,
+  "creator": "DINSTORE",
+  "platform": "tiktok",
   "message": "URL tidak boleh kosong."
 }`}</pre>
 
             </div>
 
             <p className="error-tip">
-              Selalu periksa <code>success</code> sebelum
-              menggunakan hasil dari API.
+              Selalu periksa{" "}
+              <code>success</code>{" "}
+              sebelum menggunakan hasil dari API.
             </p>
 
           </section>
 
 
           {/* =========================================
-              13 PLATFORM
+              14 HTTP STATUS
           ========================================== */}
+
           <section className="docs-card">
 
             <div className="docs-title">
-              <small>13</small>
+              <small>14</small>
+              <h2>HTTP Status</h2>
+            </div>
+
+            <div className="platforms">
+
+              <div>
+                <b>200</b>
+                <span>
+                  Berhasil
+                </span>
+              </div>
+
+              <div>
+                <b>400</b>
+                <span>
+                  Request tidak valid
+                </span>
+              </div>
+
+              <div>
+                <b>404</b>
+                <span>
+                  Media tidak ditemukan
+                </span>
+              </div>
+
+              <div>
+                <b>405</b>
+                <span>
+                  Method tidak diizinkan
+                </span>
+              </div>
+
+              <div>
+                <b>500</b>
+                <span>
+                  Server error
+                </span>
+              </div>
+
+              <div>
+                <b>502</b>
+                <span>
+                  Upstream error
+                </span>
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* =========================================
+              15 PLATFORM
+          ========================================== */}
+
+          <section className="docs-card">
+
+            <div className="docs-title">
+              <small>15</small>
               <h2>Platform</h2>
             </div>
+
+            <p>
+              Endpoint yang sama juga mendeteksi
+              platform secara otomatis.
+            </p>
 
             <div className="platforms">
 
@@ -742,6 +992,7 @@ for (const item of data.downloads) {
           {/* =========================================
               FOOTER
           ========================================== */}
+
           <footer className="docs-footer">
 
             <div className="footer-terminal">
@@ -768,6 +1019,7 @@ for (const item of data.downloads) {
 
               <div>
                 <b>SIDOWNLOAD</b>
+
                 <span>
                   FAST • SIMPLE • FREE
                 </span>
