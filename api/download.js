@@ -9,12 +9,14 @@ export const config = {
 const extractUrl = (text) => {
   if (!text) return "";
 
-  const match = String(text).match(
-    /https?:\/\/[^\s]+/i
+  const value = String(text).trim();
+
+  const match = value.match(
+    /https?:\/\/[^\s<>"']+/i
   );
 
   if (!match) {
-    return String(text).trim();
+    return value;
   }
 
   return match[0]
@@ -84,10 +86,9 @@ const detectPlatform = (rawUrl) => {
 
 const safeFetchJson = async (
   url,
-  timeoutMs = 8000
+  timeoutMs = 10000
 ) => {
-  const controller =
-    new AbortController();
+  const controller = new AbortController();
 
   const timer = setTimeout(() => {
     controller.abort();
@@ -95,6 +96,8 @@ const safeFetchJson = async (
 
   try {
     const response = await fetch(url, {
+      method: "GET",
+
       signal: controller.signal,
 
       headers: {
@@ -106,18 +109,23 @@ const safeFetchJson = async (
       },
     });
 
-    clearTimeout(timer);
+    const text = await response.text();
 
-    const text =
-      await response.text();
+    clearTimeout(timer);
 
     try {
       return JSON.parse(text);
     } catch {
       return null;
     }
-  } catch {
+  } catch (error) {
     clearTimeout(timer);
+
+    console.error(
+      "UPSTREAM FETCH ERROR:",
+      error
+    );
+
     return null;
   }
 };
@@ -130,9 +138,9 @@ export default async function handler(
   req,
   res
 ) {
-  // ==========================================
+  // ========================================
   // CORS
-  // ==========================================
+  // ========================================
 
   res.setHeader(
     "Content-Type",
@@ -154,17 +162,17 @@ export default async function handler(
     "Content-Type"
   );
 
-  // ==========================================
+  // ========================================
   // OPTIONS
-  // ==========================================
+  // ========================================
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // ==========================================
+  // ========================================
   // METHOD
-  // ==========================================
+  // ========================================
 
   if (
     req.method !== "GET" &&
@@ -172,19 +180,22 @@ export default async function handler(
   ) {
     return res.status(405).json({
       success: false,
+
       message:
         "Metode tidak diizinkan.",
     });
   }
 
-  // ==========================================
-  // GET / POST
-  // ==========================================
+  // ========================================
+  // GET / POST URL
+  // ========================================
 
   const rawUrl =
     req.method === "POST"
-      ? req.body?.url
-      : req.query?.url;
+      ? req.body?.url ||
+        req.body?.link
+      : req.query?.url ||
+        req.query?.link;
 
   const cleanUrl =
     extractUrl(rawUrl);
@@ -192,14 +203,15 @@ export default async function handler(
   if (!cleanUrl) {
     return res.status(400).json({
       success: false,
+
       message:
         "URL tidak boleh kosong.",
     });
   }
 
-  // ==========================================
+  // ========================================
   // DETECT PLATFORM
-  // ==========================================
+  // ========================================
 
   const platform =
     detectPlatform(cleanUrl);
@@ -207,6 +219,7 @@ export default async function handler(
   if (!platform) {
     return res.status(400).json({
       success: false,
+
       message:
         "Platform tidak didukung.",
     });
@@ -224,9 +237,9 @@ export default async function handler(
     const encodedUrl =
       encodeURIComponent(cleanUrl);
 
-    // ==========================================
+    // ========================================
     // YOUTUBE
-    // ==========================================
+    // ========================================
 
     if (
       platform === "youtube"
@@ -262,10 +275,6 @@ export default async function handler(
           validResult.thumbnail ||
           "";
 
-        // ======================================
-        // DURATION
-        // ======================================
-
         if (
           validResult.duration
         ) {
@@ -274,9 +283,7 @@ export default async function handler(
               validResult.duration
             );
 
-          if (
-            !isNaN(dur)
-          ) {
+          if (!isNaN(dur)) {
             const m =
               Math.floor(
                 dur / 60
@@ -295,9 +302,7 @@ export default async function handler(
           }
         }
 
-        // ======================================
         // MP4
-        // ======================================
 
         if (
           mp4Data?.result?.download
@@ -314,9 +319,7 @@ export default async function handler(
           });
         }
 
-        // ======================================
         // MP3
-        // ======================================
 
         if (
           mp3Data?.result?.download
@@ -335,9 +338,9 @@ export default async function handler(
       }
     }
 
-    // ==========================================
+    // ========================================
     // SPOTIFY
-    // ==========================================
+    // ========================================
 
     else if (
       platform === "spotify"
@@ -380,9 +383,9 @@ export default async function handler(
       }
     }
 
-    // ==========================================
+    // ========================================
     // TIKTOK
-    // ==========================================
+    // ========================================
 
     else if (
       platform === "tiktok"
@@ -484,77 +487,108 @@ export default async function handler(
       }
     }
 
-    
-// ==========================================
-// CAPCUT
-// ==========================================
+    // ========================================
+    // CAPCUT
+    // ========================================
 
-else if (
-  platform === "capcut"
-) {
-  const ccData =
-    await safeFetchJson(
-      `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
-    );
+    else if (
+      platform === "capcut"
+    ) {
+      const ccData =
+        await safeFetchJson(
+          `https://api.siputzx.my.id/api/d/capcut?url=${encodedUrl}`
+        );
 
-  // ========================================
-  // RESPONSE API:
-  //
-  // {
-  //   "status": true,
-  //   "data": {
-  //     "code": 200,
-  //     "originalVideoUrl": "https://3bic.com/api/cdn/"
-  //   },
-  //   "timestamp": "..."
-  // }
-  // ========================================
+      // ======================================
+      // RESPONSE:
+      //
+      // {
+      //   "status": true,
+      //   "data": {
+      //     "code": 200,
+      //     "originalVideoUrl":
+      //       "https://3bic.com/api/cdn/"
+      //   }
+      // }
+      // ======================================
 
-  const capcutData =
-    ccData?.data || {};
+      if (!ccData) {
+        return res.status(502).json({
+          success: false,
 
-  const capcutLink =
-    capcutData?.originalVideoUrl ||
-    "";
+          platform: "capcut",
 
-  // ========================================
-  // STATUS API
-  // ========================================
+          message:
+            "Server CapCut tidak memberikan response.",
+        });
+      }
 
-  if (
-    ccData?.status !== true
-  ) {
-    return res.status(404).json({
-      success: false,
+      if (
+        ccData?.status !== true
+      ) {
+        return res.status(404).json({
+          success: false,
 
-      platform: "capcut",
+          platform: "capcut",
 
-      message:
-        "API CapCut gagal memproses link tersebut.",
-    });
-  }
+          message:
+            "API CapCut gagal memproses link tersebut.",
+        });
+      }
 
-  // ========================================
-  // DOWNLOAD URL
-  // ========================================
+      const capcutData =
+        ccData?.data || {};
 
-  if (capcutLink) {
-    downloads.push({
-      url:
-        capcutLink,
+      const capcutLink =
+        capcutData?.originalVideoUrl ||
+        capcutData?.videoUrl ||
+        capcutData?.downloadUrl ||
+        capcutData?.download ||
+        "";
 
-      text:
-        "Download Video (MP4)",
+      if (!capcutLink) {
+        return res.status(404).json({
+          success: false,
 
-      type:
-        "capcut",
-    });
-  }
-}
+          platform: "capcut",
 
-    // ==========================================
+          message:
+            "Video CapCut tidak ditemukan.",
+        });
+      }
+
+      title =
+        capcutData?.title ||
+        "CapCut Video";
+
+      author =
+        capcutData?.author ||
+        "CapCut";
+
+      thumbnail =
+        capcutData?.thumbnail ||
+        capcutData?.cover ||
+        "";
+
+      duration =
+        capcutData?.duration ||
+        "";
+
+      downloads.push({
+        url:
+          capcutLink,
+
+        text:
+          "Download Video (MP4)",
+
+        type:
+          "capcut",
+      });
+    }
+
+    // ========================================
     // FACEBOOK
-    // ==========================================
+    // ========================================
 
     else if (
       platform === "facebook"
@@ -646,9 +680,9 @@ else if (
       }
     }
 
-    // ==========================================
+    // ========================================
     // INSTAGRAM
-    // ==========================================
+    // ========================================
 
     else if (
       platform === "instagram"
@@ -722,6 +756,7 @@ else if (
             );
 
           // VIDEO
+
           if (
             mediaType === "mp4" ||
             mediaType === "video" ||
@@ -746,6 +781,7 @@ else if (
           }
 
           // AUDIO
+
           if (
             mediaType === "mp3" ||
             mediaType === "m4a" ||
@@ -769,6 +805,7 @@ else if (
           }
 
           // FORMAT LAIN
+
           downloads.push({
             url:
               mediaUrl,
@@ -827,9 +864,7 @@ else if (
 
       if (
         downloads.length === 0 &&
-        Array.isArray(
-          igData
-        )
+        Array.isArray(igData)
       ) {
         igData.forEach(
           (
@@ -861,9 +896,9 @@ else if (
       }
     }
 
-    // ==========================================
+    // ========================================
     // REMOVE DUPLICATE
-    // ==========================================
+    // ========================================
 
     const uniqueDownloads =
       downloads.filter(
@@ -872,17 +907,17 @@ else if (
           index,
           array
         ) =>
-          item.url &&
+          item?.url &&
           array.findIndex(
             (x) =>
-              x.url ===
+              x?.url ===
               item.url
           ) === index
       );
 
-    // ==========================================
+    // ========================================
     // NO DOWNLOAD
-    // ==========================================
+    // ========================================
 
     if (
       uniqueDownloads.length ===
@@ -898,9 +933,9 @@ else if (
       });
     }
 
-    // ==========================================
+    // ========================================
     // SUCCESS
-    // ==========================================
+    // ========================================
 
     return res.status(200).json({
       success: true,
@@ -920,6 +955,7 @@ else if (
       downloads:
         uniqueDownloads,
     });
+
   } catch (err) {
     console.error(
       "SIDOWNLOAD API ERROR:",
