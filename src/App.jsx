@@ -5,7 +5,7 @@ import Docs from "./d/Docs";
 // ==========================================
 // 
 // ==========================================
-const APK_LINK = "https://sfile.co/StLK5URmkeE"; 
+const APK_URL = "https://sfile.co/StLK5URmkeE"; 
 
 const PLATFORMS = [
   {
@@ -738,27 +738,24 @@ function MainApp() {
             </ul>
           </div>
 
-          <div className="footer-column">
+          
+<div className="footer-column">
   <h4>Informasi</h4>
 
   <ul>
     <li>
       <a
-        href={APK_LINK}
-        onClick={(e) => {
-          if (!APK_LINK || APK_LINK === "https://sfile.mobi/xxxxx") {
-            e.preventDefault();
-            handleDownloadAPK();
-          }
+        href="/api/apk"
+        style={{
+          color: "#22c55e",
+          fontWeight: "700",
         }}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ color: "#22c55e", fontWeight: "700" }}
       >
         📱 Download APK
       </a>
     </li>
-
+  </ul>
+</div>
 
 
 
