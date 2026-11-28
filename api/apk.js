@@ -1,5 +1,4 @@
-const SFILE_DOWNLOAD_URL =
-  "https://sfile.co/XRb0GZWlIIl?fid=U3RMSzVVUm1rZUUma2V5PUYxRDI1OUY0MzlBN0ZFMzc-";
+const SFILE_PAGE_URL = "https://sfile.co/ZwWpRuE1trX";
 
 export default async function handler(req, res) {
   try {
@@ -10,71 +9,79 @@ export default async function handler(req, res) {
       });
     }
 
-    const response = await fetch(SFILE_DOWNLOAD_URL, {
-      method: "GET",
+    const page = await fetch(SFILE_PAGE_URL, {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36",
-        Accept:
-          "application/vnd.android.package-archive,application/octet-stream,*/*",
-        Referer: "https://sfile.co/StLK5URmkeE",
-        Connection: "keep-alive",
+          "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36",
+        Accept: "text/html,application/xhtml+xml",
       },
       redirect: "follow",
     });
 
-    if (!response.ok) {
+    if (!page.ok) {
       return res.status(502).json({
         success: false,
-        message: "Gagal mengambil file APK dari SFile.",
+        message: "Gagal membuka halaman APK SFile.",
       });
     }
 
-    const buffer = Buffer.from(await response.arrayBuffer());
-
-    if (!buffer.length) {
-      return res.status(502).json({
-        success: false,
-        message: "File APK kosong.",
-      });
-    }
+    const html = await page.text();
 
     /*
-     * APK adalah ZIP archive.
-     * File ZIP biasanya dimulai dengan:
-     * 50 4B 03 04
-     * atau signature ZIP lainnya.
+     * Ambil data-wait download URL dari halaman SFile.
      */
+    const match = html.match(
+      /data-dw-url=["']([^"']+)["']/i
+    );
 
-    const isZip =
+    if (!match || !match[1]) {
+      return res.status(502).json({
+        success: false,
+        message: "URL download APK SFile tidak ditemukan.",
+      });
+    }
+
+    const downloadUrl = new URL(
+      match[1],
+      "https://sfile.co"
+    ).href;
+
+    const apkResponse = await fetch(downloadUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36",
+        Accept:
+          "application/vnd.android.package-archive,application/octet-stream,*/*",
+        Referer: SFILE_PAGE_URL,
+      },
+      redirect: "follow",
+    });
+
+    if (!apkResponse.ok) {
+      return res.status(502).json({
+        success: false,
+        message: "Gagal mengambil APK dari SFile.",
+      });
+    }
+
+    const buffer = Buffer.from(
+      await apkResponse.arrayBuffer()
+    );
+
+    /*
+     * APK adalah ZIP.
+     * File APK yang valid harus mempunyai ZIP signature.
+     */
+    const isApk =
       buffer.length >= 4 &&
       buffer[0] === 0x50 &&
-      buffer[1] === 0x4b &&
-      (
-        (
-          buffer[2] === 0x03 &&
-          buffer[3] === 0x04
-        ) ||
-        (
-          buffer[2] === 0x05 &&
-          buffer[3] === 0x06
-        ) ||
-        (
-          buffer[2] === 0x07 &&
-          buffer[3] === 0x08
-        )
-      );
+      buffer[1] === 0x4b;
 
-    if (!isZip) {
-      console.error(
-        "SFILE TIDAK MENGEMBALIKAN APK. Content-Type:",
-        response.headers.get("content-type")
-      );
-
+    if (!isApk) {
       return res.status(502).json({
         success: false,
         message:
-          "Server SFile tidak mengembalikan file APK asli. Silakan coba lagi.",
+          "SFile belum mengembalikan file APK asli.",
       });
     }
 
@@ -88,13 +95,19 @@ export default async function handler(req, res) {
       'attachment; filename="SIDOWNLOAD.apk"'
     );
 
-    res.setHeader("Content-Length", buffer.length);
+    res.setHeader(
+      "Content-Length",
+      buffer.length
+    );
 
-    res.setHeader("Cache-Control", "no-store");
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate"
+    );
 
     return res.status(200).send(buffer);
   } catch (error) {
-    console.error("APK DOWNLOAD ERROR:", error);
+    console.error("APK ERROR:", error);
 
     return res.status(500).json({
       success: false,
