@@ -816,8 +816,8 @@ function MainApp() {
             setShowReviewModal(true)
           }
         >
-          ⭐ Beri Rating & Ulasan ({avgRating} / 5 •{" "}
-          {reviews.length} Komentar)
+          ⭐ Beri Rating ({avgRating} / 5 •{" "}
+          {reviews.length} Rating)
         </button>
       </div>
 
@@ -984,103 +984,6 @@ function MainApp() {
                 )}
               </div>
             </form>
-
-            {/* Hasil Komentar Pengguna */}
-            <div
-              style={{
-                marginTop: "20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "12px",
-              }}
-            >
-              {reviews.length === 0 ? (
-                <p
-                  style={{
-                    color: "#71717a",
-                    textAlign: "center",
-                    fontSize: "13px",
-                    padding: "16px 0",
-                  }}
-                >
-                  Belum ada komentar. Jadilah
-                  yang pertama memberikan ulasan!
-                </p>
-              ) : (
-                reviews.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      background:
-                        "rgba(255, 255, 255, 0.03)",
-                      border:
-                        "1px solid rgba(255, 255, 255, 0.08)",
-                      borderRadius: "12px",
-                      padding: "12px 16px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent:
-                          "space-between",
-                        alignItems: "center",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontWeight: "600",
-                          color: "#f4f4f5",
-                          fontSize: "13.5px",
-                        }}
-                      >
-                        {item.name}
-                      </span>
-
-                      <span
-                        style={{
-                          fontSize: "12px",
-                        }}
-                      >
-                        {"⭐".repeat(
-                          Number(item.rating || 0)
-                        )}
-                      </span>
-                    </div>
-
-                    <p
-                      style={{
-                        margin: "0 0 6px",
-                        color: "#a1a1aa",
-                        fontSize: "12.5px",
-                        lineHeight: "1.4",
-                      }}
-                    >
-                      {item.comment}
-                    </p>
-
-                    <span
-                      style={{
-                        fontSize: "10.5px",
-                        color: "#52525b",
-                      }}
-                    >
-                      {new Date(
-                        item.created_at
-                      ).toLocaleDateString(
-                        "id-ID",
-                        {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        }
-                      )}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
         </div>
       )}
