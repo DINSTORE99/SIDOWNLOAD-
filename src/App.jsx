@@ -5,7 +5,7 @@ import Docs from "./d/Docs";
 // ==========================================
 // 
 // ==========================================
-const APK_LINK = "https://sfile.co/PXfhrhLw6sk"; 
+const APK_LINK = "https://sfile.co/StLK5URmkeE"; 
 
 const PLATFORMS = [
   {
