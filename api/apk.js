@@ -14,10 +14,11 @@ export default async function handler(req, res) {
       method: "GET",
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36",
+          "Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36",
         Accept:
           "application/vnd.android.package-archive,application/octet-stream,*/*",
-        Referer: "https://sfile.co/",
+        Referer: "https://sfile.co/StLK5URmkeE",
+        Connection: "keep-alive",
       },
       redirect: "follow",
     });
@@ -25,24 +26,8 @@ export default async function handler(req, res) {
     if (!response.ok) {
       return res.status(502).json({
         success: false,
-        message: "Gagal mengambil file APK dari server.",
+        message: "Gagal mengambil file APK dari SFile.",
       });
-    }
-
-    const contentType =
-      response.headers.get("content-type") ||
-      "application/vnd.android.package-archive";
-
-    const contentLength = response.headers.get("content-length");
-
-    res.setHeader("Content-Type", "application/vnd.android.package-archive");
-    res.setHeader(
-      "Content-Disposition",
-      'attachment; filename="SIDOWNLOAD.apk"'
-    );
-
-    if (contentLength) {
-      res.setHeader("Content-Length", contentLength);
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
@@ -53,6 +38,59 @@ export default async function handler(req, res) {
         message: "File APK kosong.",
       });
     }
+
+    /*
+     * APK adalah ZIP archive.
+     * File ZIP biasanya dimulai dengan:
+     * 50 4B 03 04
+     * atau signature ZIP lainnya.
+     */
+
+    const isZip =
+      buffer.length >= 4 &&
+      buffer[0] === 0x50 &&
+      buffer[1] === 0x4b &&
+      (
+        (
+          buffer[2] === 0x03 &&
+          buffer[3] === 0x04
+        ) ||
+        (
+          buffer[2] === 0x05 &&
+          buffer[3] === 0x06
+        ) ||
+        (
+          buffer[2] === 0x07 &&
+          buffer[3] === 0x08
+        )
+      );
+
+    if (!isZip) {
+      console.error(
+        "SFILE TIDAK MENGEMBALIKAN APK. Content-Type:",
+        response.headers.get("content-type")
+      );
+
+      return res.status(502).json({
+        success: false,
+        message:
+          "Server SFile tidak mengembalikan file APK asli. Silakan coba lagi.",
+      });
+    }
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.android.package-archive"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="SIDOWNLOAD.apk"'
+    );
+
+    res.setHeader("Content-Length", buffer.length);
+
+    res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).send(buffer);
   } catch (error) {
