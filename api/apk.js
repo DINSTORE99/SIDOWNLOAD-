@@ -1,5 +1,5 @@
 const SFILE_DOWNLOAD_URL =
-  "https://sfile.co/download/StLK5URmkeE?fid=U3RMSzVVUm1rZUUma2V5PUYxRDI1OUY0MzlBN0ZFMzc-";
+  "https://sfile.co/XRb0GZWlIIl?fid=U3RMSzVVUm1rZUUma2V5PUYxRDI1OUY0MzlBN0ZFMzc-";
 
 export default async function handler(req, res) {
   try {
