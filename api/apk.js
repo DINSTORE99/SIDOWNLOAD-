@@ -1,4 +1,4 @@
-const APK_URL = "URL_SFILE_APK_KAMU";
+const APK_URL = "https://sfile.co/StLK5URmkeE";
 
 export default async function handler(req, res) {
   try {
