@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import "./style.css";
 import Docs from "./d/Docs";
+
 // ==========================================
-// 
+// APK
 // ==========================================
-const APK_URL = "/api/apk"; 
+const APK_URL = "/api/apk";
 
 const PLATFORMS = [
   {
@@ -123,10 +124,19 @@ function MainApp() {
 
     const initVisitor = async () => {
       try {
-        const hasCounted = sessionStorage.getItem("sidownload_visitor_counted");
+        const hasCounted = sessionStorage.getItem(
+          "sidownload_visitor_counted"
+        );
+
         if (!hasCounted) {
-          await supabase.rpc("increment_visitor", { site_id: "global" });
-          sessionStorage.setItem("sidownload_visitor_counted", "1");
+          await supabase.rpc("increment_visitor", {
+            site_id: "global",
+          });
+
+          sessionStorage.setItem(
+            "sidownload_visitor_counted",
+            "1"
+          );
         }
 
         const { data } = await supabase
@@ -135,7 +145,9 @@ function MainApp() {
           .eq("id", "global")
           .single();
 
-        if (data) setVisitorCount(data.visitors_count);
+        if (data) {
+          setVisitorCount(data.visitors_count);
+        }
       } catch {}
     };
 
@@ -146,15 +158,24 @@ function MainApp() {
   }, []);
 
   const saveToHistory = (item) => {
-    const updated = [item, ...history.filter((h) => h.url !== item.url)].slice(0, 8);
+    const updated = [
+      item,
+      ...history.filter((h) => h.url !== item.url),
+    ].slice(0, 8);
+
     setHistory(updated);
+
     try {
-      localStorage.setItem("sidownload_history", JSON.stringify(updated));
+      localStorage.setItem(
+        "sidownload_history",
+        JSON.stringify(updated)
+      );
     } catch {}
   };
 
   const clearHistory = () => {
     setHistory([]);
+
     try {
       localStorage.removeItem("sidownload_history");
     } catch {}
@@ -164,21 +185,28 @@ function MainApp() {
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
+
       if (text) {
         setUrl(text.trim());
         setError("");
       }
     } catch {
-      const inputElement = document.querySelector(".input-box");
+      const inputElement =
+        document.querySelector(".input-box");
+
       if (inputElement) {
         inputElement.focus();
-        setError("Silakan tahan (long-press) di kolom input lalu klik Tempel.");
+
+        setError(
+          "Silakan tahan (long-press) di kolom input lalu klik Tempel."
+        );
       }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!url.trim()) {
       setError("Masukkan tautan terlebih dahulu.");
       return;
@@ -193,24 +221,35 @@ function MainApp() {
     try {
       const res = await fetch("/api/download", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ url }),
       });
 
       const rawText = await res.text();
+
       let data = null;
+
       try {
         data = JSON.parse(rawText);
       } catch {
-        throw new Error("Server sedang sibuk. Silakan coba kembali sesaat lagi.");
+        throw new Error(
+          "Server sedang sibuk. Silakan coba kembali sesaat lagi."
+        );
       }
 
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Gagal memproses media.");
+        throw new Error(
+          data.message || "Gagal memproses media."
+        );
       }
 
       setResult(data);
-      if (data.platform) setSelectedPlatform(data.platform);
+
+      if (data.platform) {
+        setSelectedPlatform(data.platform);
+      }
 
       saveToHistory({
         title: data.title || "Media File",
@@ -219,7 +258,10 @@ function MainApp() {
         date: new Date().toLocaleDateString("id-ID"),
       });
     } catch (err) {
-      setError(err.message || "Terjadi kendala saat menghubungi server.");
+      setError(
+        err.message ||
+          "Terjadi kendala saat menghubungi server."
+      );
     } finally {
       setLoading(false);
     }
@@ -239,30 +281,39 @@ function MainApp() {
     setError("");
   };
 
+  // =========================================================
+  // DOWNLOAD APK
+  // =========================================================
   const handleDownloadAPK = () => {
-    if (!APK_LINK || APK_LINK === "https://sfile.mobi/xxxxx") {
-      alert("Link download APK belum disetel.");
-      return;
-    }
-    sendTelegramNotification("apk_download", { url: APK_LINK });
-    window.open(APK_LINK, "_blank", "noopener,noreferrer");
+    sendTelegramNotification("apk_download", {
+      url: APK_URL,
+    });
+
+    // Tetap menggunakan halaman/API SIDOWNLOAD.
+    // Tidak membuka SFile langsung.
+    window.location.href = APK_URL;
   };
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    if (!reviewName.trim() || !reviewComment.trim()) return;
+
+    if (!reviewName.trim() || !reviewComment.trim()) {
+      return;
+    }
 
     setLoadingReview(true);
     setReviewMsg("");
 
     try {
-      const { error } = await supabase.from("reviews").insert([
-        {
-          name: reviewName.trim(),
-          rating: Number(reviewRating),
-          comment: reviewComment.trim(),
-        },
-      ]);
+      const { error } = await supabase
+        .from("reviews")
+        .insert([
+          {
+            name: reviewName.trim(),
+            rating: Number(reviewRating),
+            comment: reviewComment.trim(),
+          },
+        ]);
 
       if (!error) {
         setReviewName("");
@@ -271,48 +322,84 @@ function MainApp() {
         setReviewMsg("Ulasan berhasil dikirim!");
         fetchReviews();
       } else {
-        setReviewMsg("Gagal mengirim ulasan: " + error.message);
+        setReviewMsg(
+          "Gagal mengirim ulasan: " + error.message
+        );
       }
     } catch {
-      setReviewMsg("Terjadi kendala saat mengirim ulasan.");
+      setReviewMsg(
+        "Terjadi kendala saat mengirim ulasan."
+      );
     } finally {
       setLoadingReview(false);
     }
   };
 
   const avgRating = reviews.length
-    ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
+    ? (
+        reviews.reduce(
+          (acc, curr) => acc + Number(curr.rating || 0),
+          0
+        ) / reviews.length
+      ).toFixed(1)
     : "0.0";
 
   return (
     <div className="sidownload-app">
-      {/* BANNER MELAYANG DOWNLOAD APK (Otomatis muncul saat web dibuka) */}
+
+      {/* BANNER MELAYANG DOWNLOAD APK */}
       {showDownloadBanner && (
         <div className="apk-download-banner">
-          <button 
+          <button
             type="button"
             className="apk-banner-close"
-            onClick={() => setShowDownloadBanner(false)}
+            onClick={() =>
+              setShowDownloadBanner(false)
+            }
           >
             ×
           </button>
+
           <div className="apk-banner-icon-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="34" height="34" style={{ borderRadius: "8px" }}>
-              <rect width="512" height="512" rx="115" fill="#08090a"/>
-              <g transform="translate(40, 40) scale(18)">
-                <path d="M12 6c-2.5 0-4 1.2-4 3 0 3.5 8 1.5 8 5 0 2-1.7 3-4 3s-4.2-1.1-4.2-2.5h2.2c0 .5 1 1 2 1s2-.5 2-1.2c0-3.5-8-1.5-8-5 0-2.3 1.8-3.3 4-3.3 2.1 0 3.8 1 3.8 2.5h-2.1c-.2-.6-1-1-1.7-1z" fill="#1ed760"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              width="34"
+              height="34"
+              style={{ borderRadius: "8px" }}
+            >
+              <rect
+                width="512"
+                height="512"
+                rx="115"
+                fill="#08090a"
+              />
+
+              <g
+                transform="translate(40, 40) scale(18)"
+              >
+                <path
+                  d="M12 6c-2.5 0-4 1.2-4 3 0 3.5 8 1.5 8 5 0 2-1.7 3-4 3s-4.2-1.1-4.2-2.5h2.2c0 .5 1 1 2 1s2-.5 2-1.2c0-3.5-8-1.5-8-5 0-2.3 1.8-3.3 4-3.3 2.1 0 3.8 1 3.8 2.5h-2.1c-.2-.6-1-1-1.7-1z"
+                  fill="#1ed760"
+                />
               </g>
             </svg>
           </div>
+
           <div className="apk-banner-info">
-            <span className="apk-banner-title">Download App SIDOWNLOAD</span>
-            <span className="apk-banner-desc">Lebih cepat & bebas ribet!</span>
+            <span className="apk-banner-title">
+              Download App SIDOWNLOAD
+            </span>
+
+            <span className="apk-banner-desc">
+              Lebih cepat & bebas ribet!
+            </span>
           </div>
-          <a 
-            href={APK_LINK} 
-            target="_blank"
-            rel="noopener noreferrer"
+
+          <a
+            href={APK_URL}
             className="apk-banner-btn"
+            onClick={handleDownloadAPK}
           >
             Download
           </a>
@@ -320,64 +407,92 @@ function MainApp() {
       )}
 
       {/* NAVBAR */}
-<nav className="navbar">
-  <div className="brand-wrapper">
-    <div className="brand-icon">S</div>
+      <nav className="navbar">
+        <div className="brand-wrapper">
+          <div className="brand-icon">S</div>
 
-    <div className="brand-text">
-      <h2>SIDOWNLOAD</h2>
-      <span>FAST • SIMPLE • FREE</span>
-    </div>
-  </div>
+          <div className="brand-text">
+            <h2>SIDOWNLOAD</h2>
+            <span>FAST • SIMPLE • FREE</span>
+          </div>
+        </div>
 
-  <div
-    className="visitor-badge-compact"
-    title="Total Pengunjung"
-  >
-    <span className="visitor-icon">👁️</span>
+        <div
+          className="visitor-badge-compact"
+          title="Total Pengunjung"
+        >
+          <span className="visitor-icon">👁️</span>
 
-    <span className="visitor-count">
-      {visitorCount !== null
-        ? `${visitorCount.toLocaleString()} dikunjungi`
-        : "..."}
-    </span>
-  </div>
-</nav>
+          <span className="visitor-count">
+            {visitorCount !== null
+              ? `${visitorCount.toLocaleString()} dikunjungi`
+              : "..."}
+          </span>
+        </div>
+      </nav>
 
       <main className="content-container">
+
         {/* HERO SECTION */}
         <section className="hero-section">
           <div className="badge-tag">
             <span className="dot"></span>
             <span>MEDIA DOWNLOADER</span>
           </div>
+
           <h1 className="hero-title">
             Download Video <br />
-            & Audio <span className="text-green">Tanpa Ribet</span>
+            & Audio{" "}
+            <span className="text-green">
+              Tanpa Ribet
+            </span>
           </h1>
+
           <p className="hero-desc">
-            Download media favorit kamu dengan cepat, sederhana, dan gratis.
+            Download media favorit kamu dengan cepat,
+            sederhana, dan gratis.
           </p>
         </section>
 
         {/* MOCKUP HP */}
         <div className="mockup-container">
-          <div className="orbit-icon pos-top-left">{PLATFORMS[0].icon}</div>
-          <div className="orbit-icon pos-top-right">{PLATFORMS[1].icon}</div>
-          <div className="orbit-icon pos-mid-left">{PLATFORMS[4].icon}</div>
-          <div className="orbit-icon pos-mid-right">{PLATFORMS[5].icon}</div>
+          <div className="orbit-icon pos-top-left">
+            {PLATFORMS[0].icon}
+          </div>
+
+          <div className="orbit-icon pos-top-right">
+            {PLATFORMS[1].icon}
+          </div>
+
+          <div className="orbit-icon pos-mid-left">
+            {PLATFORMS[4].icon}
+          </div>
+
+          <div className="orbit-icon pos-mid-right">
+            {PLATFORMS[5].icon}
+          </div>
 
           <div className="phone-mockup">
             <div className="mockup-inner">
-              <span className="mockup-brand">SIDOWNLOAD</span>
+              <span className="mockup-brand">
+                SIDOWNLOAD
+              </span>
+
               <div className="mockup-play-screen">
                 <div className="mockup-glow"></div>
+
                 <div className="mockup-play-btn">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#000">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="#000"
+                  >
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
                 </div>
               </div>
+
               <div className="mockup-bars">
                 <div className="mockup-bar w-long"></div>
                 <div className="mockup-bar w-short"></div>
@@ -388,16 +503,27 @@ function MainApp() {
 
         {/* PLATFORMS */}
         <div className="section-header">
-          <span className="section-label">SUPPORTED</span>
-          <h3 className="section-title">Pilih Platform</h3>
+          <span className="section-label">
+            SUPPORTED
+          </span>
+
+          <h3 className="section-title">
+            Pilih Platform
+          </h3>
         </div>
 
         <div className="platform-grid">
           {PLATFORMS.map((item) => (
             <div
               key={item.id}
-              className={`platform-card ${selectedPlatform === item.id ? "active" : ""}`}
-              onClick={() => setSelectedPlatform(item.id)}
+              className={`platform-card ${
+                selectedPlatform === item.id
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() =>
+                setSelectedPlatform(item.id)
+              }
             >
               {item.icon}
               <span>{item.name}</span>
@@ -407,11 +533,19 @@ function MainApp() {
 
         {/* INPUT FORM */}
         <div className="section-header">
-          <span className="section-label">DOWNLOAD</span>
-          <h3 className="section-title">Masukkan Link</h3>
+          <span className="section-label">
+            DOWNLOAD
+          </span>
+
+          <h3 className="section-title">
+            Masukkan Link
+          </h3>
         </div>
 
-        <form className="input-card" onSubmit={handleSubmit}>
+        <form
+          className="input-card"
+          onSubmit={handleSubmit}
+        >
           <div className="input-field-wrapper">
             <input
               type="text"
@@ -423,16 +557,32 @@ function MainApp() {
                 setError("");
               }}
             />
+
             <button
               type="button"
               className="paste-btn"
               onClick={handlePaste}
               title="Tempel dari Clipboard"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+              >
                 <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                <rect
+                  x="8"
+                  y="2"
+                  width="8"
+                  height="4"
+                  rx="1"
+                  ry="1"
+                ></rect>
               </svg>
+
               <span>Paste</span>
             </button>
           </div>
@@ -442,17 +592,28 @@ function MainApp() {
             className="submit-btn"
             disabled={loading || !url.trim()}
           >
-            {loading ? "Memproses..." : "Download Sekarang"}
+            {loading
+              ? "Memproses..."
+              : "Download Sekarang"}
           </button>
 
-          {error && <div className="msg-error">❌ {error}</div>}
+          {error && (
+            <div className="msg-error">
+              ❌ {error}
+            </div>
+          )}
 
           {/* HASIL DOWNLOAD */}
           {result && (
             <div className="result-card">
               <div className="result-header">
-                <span className="section-label">DETAIL MEDIA</span>
-                <span className="platform-badge">{result.platform}</span>
+                <span className="section-label">
+                  DETAIL MEDIA
+                </span>
+
+                <span className="platform-badge">
+                  {result.platform}
+                </span>
               </div>
 
               {result.thumbnail && (
@@ -462,69 +623,111 @@ function MainApp() {
                     alt="Thumbnail"
                     className="media-thumbnail"
                     onError={(e) => {
-                      e.currentTarget.style.display = "none";
+                      e.currentTarget.style.display =
+                        "none";
                     }}
                   />
-                  {result.duration && <span className="media-duration">{result.duration}</span>}
+
+                  {result.duration && (
+                    <span className="media-duration">
+                      {result.duration}
+                    </span>
+                  )}
                 </div>
               )}
 
-              <h4 className="media-title">{result.title}</h4>
+              <h4 className="media-title">
+                {result.title}
+              </h4>
 
               {result.author && (
                 <div className="media-author">
-                  <span>👤 {result.author}</span>
+                  <span>
+                    👤 {result.author}
+                  </span>
                 </div>
               )}
 
-              {result.stats && <div className="media-stats">{result.stats}</div>}
+              {result.stats && (
+                <div className="media-stats">
+                  {result.stats}
+                </div>
+              )}
 
-              <div className="download-options-title">OPSI UNDUHAN</div>
-
-              <div className="download-buttons-group">
-                {result.downloads?.map((item, index) => (
-                  <a
-                    key={`${item.url}-${index}`}
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download
-                    className={`download-link download-${item.type || result.platform}`}
-                    onClick={() => handleDownloadClick(item.text)}
-                  >
-                    <span>{item.text}</span>
-                    <span>↓</span>
-                  </a>
-                ))}
+              <div className="download-options-title">
+                OPSI UNDUHAN
               </div>
 
-              <button type="button" className="clear-btn" onClick={clearResult}>
+              <div className="download-buttons-group">
+                {result.downloads?.map(
+                  (item, index) => (
+                    <a
+                      key={`${item.url}-${index}`}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download
+                      className={`download-link download-${
+                        item.type ||
+                        result.platform
+                      }`}
+                      onClick={() =>
+                        handleDownloadClick(
+                          item.text
+                        )
+                      }
+                    >
+                      <span>{item.text}</span>
+                      <span>↓</span>
+                    </a>
+                  )
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="clear-btn"
+                onClick={clearResult}
+              >
                 ← Cari Link Lain
               </button>
             </div>
           )}
         </form>
 
-        
-
         {/* RIWAYAT */}
         {history.length > 0 && (
           <div className="history-section">
             <div className="history-header">
-              <span className="section-label">RIWAYAT</span>
-              <button className="clear-history-btn" onClick={clearHistory}>
+              <span className="section-label">
+                RIWAYAT
+              </span>
+
+              <button
+                className="clear-history-btn"
+                onClick={clearHistory}
+              >
                 Hapus
               </button>
             </div>
+
             <div className="history-list">
               {history.map((item, i) => (
-                <div key={i} className="history-item">
+                <div
+                  key={i}
+                  className="history-item"
+                >
                   <div className="history-meta">
-                    <span className="history-title">{item.title}</span>
+                    <span className="history-title">
+                      {item.title}
+                    </span>
+
                     <span className="history-date">
-                      {item.platform?.toUpperCase()} • {item.date}
+                      {item.platform?.toUpperCase()} •{" "}
+                      {item.date}
                     </span>
                   </div>
+
                   <a
                     href={item.url}
                     target="_blank"
@@ -542,85 +745,164 @@ function MainApp() {
         {/* PANDUAN PENGGUNAAN */}
         <section className="instructions-section">
           <div className="section-header">
-            <span className="section-label">PANDUAN</span>
-            <h3 className="section-title">Cara Penggunaan</h3>
+            <span className="section-label">
+              PANDUAN
+            </span>
+
+            <h3 className="section-title">
+              Cara Penggunaan
+            </h3>
           </div>
+
           <div className="steps-container">
             <div className="step-card">
               <div className="step-number">1</div>
+
               <div className="step-content">
                 <h4>Salin Link Media</h4>
-                <p>Buka aplikasi TikTok, IG, YT, Spotify, dll., lalu klik tombol bagikan dan salin tautannya.</p>
+
+                <p>
+                  Buka aplikasi TikTok, IG, YT,
+                  Spotify, dll., lalu klik tombol
+                  bagikan dan salin tautannya.
+                </p>
               </div>
             </div>
+
             <div className="step-card">
               <div className="step-number">2</div>
+
               <div className="step-content">
                 <h4>Tekan Tombol Paste</h4>
-                <p>Klik tombol Paste di dalam kotak input untuk menempel link secara cepat.</p>
+
+                <p>
+                  Klik tombol Paste di dalam kotak
+                  input untuk menempel link secara
+                  cepat.
+                </p>
               </div>
             </div>
+
             <div className="step-card">
               <div className="step-number">3</div>
+
               <div className="step-content">
-                <h4>Klik Download Sekarang</h4>
-                <p>Pilih opsi resolusi video atau audio MP3 yang muncul untuk mulai mengunduh.</p>
+                <h4>
+                  Klik Download Sekarang
+                </h4>
+
+                <p>
+                  Pilih opsi resolusi video atau
+                  audio MP3 yang muncul untuk mulai
+                  mengunduh.
+                </p>
               </div>
             </div>
           </div>
         </section>
       </main>
 
+      {/* TOMBOL ONCLICK UNTUK BUKA MODAL RATING & KOMENTAR */}
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "24px",
+        }}
+      >
+        <button
+          type="button"
+          className="review-trigger-btn"
+          onClick={() =>
+            setShowReviewModal(true)
+          }
+        >
+          ⭐ Beri Rating & Ulasan ({avgRating} / 5 •{" "}
+          {reviews.length} Komentar)
+        </button>
+      </div>
 
-
-{/* TOMBOL ONCLICK UNTUK BUKA MODAL RATING & KOMENTAR */}
-        <div style={{ textAlign: "center", marginTop: "24px" }}>
-          <button
-            type="button"
-            className="review-trigger-btn"
-            onClick={() => setShowReviewModal(true)}
-          >
-            ⭐ Beri Rating & Ulasan ({avgRating} / 5 • {reviews.length} Komentar)
-          </button>
-        </div>
-      
       {/* POPUP / MODAL RATING & KOMENTAR */}
       {showReviewModal && (
-        <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() =>
+            setShowReviewModal(false)
+          }
+        >
+          <div
+            className="modal-content"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
             <div className="modal-header">
               <div>
-                <span className="section-label">TESTIMONI</span>
+                <span className="section-label">
+                  TESTIMONI
+                </span>
+
                 <h3 className="section-title">
-                  Rating & Komentar ({avgRating} / 5 ⭐)
+                  Rating & Komentar (
+                  {avgRating} / 5 ⭐)
                 </h3>
               </div>
+
               <button
                 type="button"
                 className="modal-close-btn"
-                onClick={() => setShowReviewModal(false)}
+                onClick={() =>
+                  setShowReviewModal(false)
+                }
               >
                 ✕
               </button>
             </div>
 
             {/* Form Masukan Ulasan */}
-            <form className="input-card" onSubmit={handleReviewSubmit} style={{ marginTop: "14px" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%" }}>
+            <form
+              className="input-card"
+              onSubmit={handleReviewSubmit}
+              style={{ marginTop: "14px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                  width: "100%",
+                }}
+              >
                 <input
                   type="text"
                   className="input-box"
                   placeholder="Nama Anda"
                   value={reviewName}
-                  onChange={(e) => setReviewName(e.target.value)}
+                  onChange={(e) =>
+                    setReviewName(
+                      e.target.value
+                    )
+                  }
                   required
                 />
 
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#ccc", fontSize: "14px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    color: "#ccc",
+                    fontSize: "14px",
+                  }}
+                >
                   <span>Beri Rating:</span>
+
                   <select
                     value={reviewRating}
-                    onChange={(e) => setReviewRating(e.target.value)}
+                    onChange={(e) =>
+                      setReviewRating(
+                        e.target.value
+                      )
+                    }
                     style={{
                       background: "#18181b",
                       color: "#fff",
@@ -630,11 +912,25 @@ function MainApp() {
                       outline: "none",
                     }}
                   >
-                    <option value="5">⭐⭐⭐⭐⭐ (5 - Sangat Bagus)</option>
-                    <option value="4">⭐⭐⭐⭐ (4 - Bagus)</option>
-                    <option value="3">⭐⭐⭐ (3 - Cukup)</option>
-                    <option value="2">⭐⭐ (2 - Kurang)</option>
-                    <option value="1">⭐ (1 - Buruk)</option>
+                    <option value="5">
+                      ⭐⭐⭐⭐⭐ (5 - Sangat Bagus)
+                    </option>
+
+                    <option value="4">
+                      ⭐⭐⭐⭐ (4 - Bagus)
+                    </option>
+
+                    <option value="3">
+                      ⭐⭐⭐ (3 - Cukup)
+                    </option>
+
+                    <option value="2">
+                      ⭐⭐ (2 - Kurang)
+                    </option>
+
+                    <option value="1">
+                      ⭐ (1 - Buruk)
+                    </option>
                   </select>
                 </div>
 
@@ -643,21 +939,46 @@ function MainApp() {
                   placeholder="Tulis ulasan atau pengalaman Anda menggunakan website ini..."
                   rows="3"
                   value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
+                  onChange={(e) =>
+                    setReviewComment(
+                      e.target.value
+                    )
+                  }
                   required
-                  style={{ resize: "vertical", width: "100%", boxSizing: "border-box" }}
+                  style={{
+                    resize: "vertical",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
                 />
 
                 <button
                   type="submit"
                   className="submit-btn"
-                  disabled={loadingReview || !reviewName.trim() || !reviewComment.trim()}
+                  disabled={
+                    loadingReview ||
+                    !reviewName.trim() ||
+                    !reviewComment.trim()
+                  }
                 >
-                  {loadingReview ? "Mengirim..." : "Kirim Ulasan"}
+                  {loadingReview
+                    ? "Mengirim..."
+                    : "Kirim Ulasan"}
                 </button>
 
                 {reviewMsg && (
-                  <p style={{ fontSize: "13px", color: reviewMsg.includes("berhasil") ? "#22c55e" : "#ef4444", margin: "4px 0 0" }}>
+                  <p
+                    style={{
+                      fontSize: "13px",
+                      color:
+                        reviewMsg.includes(
+                          "berhasil"
+                        )
+                          ? "#22c55e"
+                          : "#ef4444",
+                      margin: "4px 0 0",
+                    }}
+                  >
                     {reviewMsg}
                   </p>
                 )}
@@ -665,33 +986,96 @@ function MainApp() {
             </form>
 
             {/* Hasil Komentar Pengguna */}
-            <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div
+              style={{
+                marginTop: "20px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
               {reviews.length === 0 ? (
-                <p style={{ color: "#71717a", textAlign: "center", fontSize: "13px", padding: "16px 0" }}>
-                  Belum ada komentar. Jadilah yang pertama memberikan ulasan!
+                <p
+                  style={{
+                    color: "#71717a",
+                    textAlign: "center",
+                    fontSize: "13px",
+                    padding: "16px 0",
+                  }}
+                >
+                  Belum ada komentar. Jadilah
+                  yang pertama memberikan ulasan!
                 </p>
               ) : (
                 reviews.map((item) => (
                   <div
                     key={item.id}
                     style={{
-                      background: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                      background:
+                        "rgba(255, 255, 255, 0.03)",
+                      border:
+                        "1px solid rgba(255, 255, 255, 0.08)",
                       borderRadius: "12px",
                       padding: "12px 16px",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                      <span style={{ fontWeight: "600", color: "#f4f4f5", fontSize: "13.5px" }}>{item.name}</span>
-                      <span style={{ fontSize: "12px" }}>{"⭐".repeat(item.rating)}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent:
+                          "space-between",
+                        alignItems: "center",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: "600",
+                          color: "#f4f4f5",
+                          fontSize: "13.5px",
+                        }}
+                      >
+                        {item.name}
+                      </span>
+
+                      <span
+                        style={{
+                          fontSize: "12px",
+                        }}
+                      >
+                        {"⭐".repeat(
+                          Number(item.rating || 0)
+                        )}
+                      </span>
                     </div>
-                    <p style={{ margin: "0 0 6px", color: "#a1a1aa", fontSize: "12.5px", lineHeight: "1.4" }}>{item.comment}</p>
-                    <span style={{ fontSize: "10.5px", color: "#52525b" }}>
-                      {new Date(item.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+
+                    <p
+                      style={{
+                        margin: "0 0 6px",
+                        color: "#a1a1aa",
+                        fontSize: "12.5px",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      {item.comment}
+                    </p>
+
+                    <span
+                      style={{
+                        fontSize: "10.5px",
+                        color: "#52525b",
+                      }}
+                    >
+                      {new Date(
+                        item.created_at
+                      ).toLocaleDateString(
+                        "id-ID",
+                        {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        }
+                      )}
                     </span>
                   </div>
                 ))
@@ -706,81 +1090,140 @@ function MainApp() {
         <div className="footer-brand-section">
           <div className="brand-wrapper">
             <div className="brand-icon">S</div>
+
             <div className="brand-text">
               <h2>SIDOWNLOAD</h2>
               <span>FAST • SIMPLE • FREE</span>
             </div>
           </div>
+
           <p className="footer-tagline">
-            Platform download gratis, cepat, mudah dan tanpa ribet.
+            Platform download gratis, cepat, mudah
+            dan tanpa ribet.
           </p>
         </div>
 
         <div className="footer-links-group">
+
           <div className="footer-column">
             <h4>Platform</h4>
+
             <ul>
-              <li><a href="#tiktok">TikTok</a></li>
-              <li><a href="#youtube">YouTube</a></li>
-              <li><a href="#instagram">Instagram</a></li>
-              <li><a href="#spotify">Spotify</a></li>
-              <li><a href="#facebook">Facebook</a></li>
+              <li>
+                <a href="#tiktok">
+                  TikTok
+                </a>
+              </li>
+
+              <li>
+                <a href="#youtube">
+                  YouTube
+                </a>
+              </li>
+
+              <li>
+                <a href="#instagram">
+                  Instagram
+                </a>
+              </li>
+
+              <li>
+                <a href="#spotify">
+                  Spotify
+                </a>
+              </li>
+
+              <li>
+                <a href="#facebook">
+                  Facebook
+                </a>
+              </li>
             </ul>
           </div>
 
           <div className="footer-column">
             <h4>Tools</h4>
+
             <ul>
-              <li><a href="#tiktok">TikTok Downloader</a></li>
-              <li><a href="#youtube">YouTube Downloader</a></li>
-              <li><a href="#spotify">Spotify Downloader</a></li>
-              <li><a href="#instagram">Instagram Downloader</a></li>
+              <li>
+                <a href="#tiktok">
+                  TikTok Downloader
+                </a>
+              </li>
+
+              <li>
+                <a href="#youtube">
+                  YouTube Downloader
+                </a>
+              </li>
+
+              <li>
+                <a href="#spotify">
+                  Spotify Downloader
+                </a>
+              </li>
+
+              <li>
+                <a href="#instagram">
+                  Instagram Downloader
+                </a>
+              </li>
             </ul>
           </div>
 
-          
-<div className="footer-column">
-  <h4>Informasi</h4>
+          <div className="footer-column">
+            <h4>Informasi</h4>
 
-  <ul>
-    <li>
-      <a
-        href="/api/apk"
-        style={{
-          color: "#22c55e",
-          fontWeight: "700",
-        }}
-      >
-        📱 Download APK
-      </a>
-    </li>
-  </ul>
-</div>
+            <ul>
+              <li>
+                <a
+                  href={APK_URL}
+                  onClick={handleDownloadAPK}
+                  style={{
+                    color: "#22c55e",
+                    fontWeight: "700",
+                  }}
+                >
+                  📱 Download APK
+                </a>
+              </li>
 
+              <li>
+                <a href="#status">
+                  Status Layanan
+                </a>
+              </li>
 
+              <li>
+                <a href="#privacy">
+                  Privacy Policy
+                </a>
+              </li>
 
+              <li>
+                <a href="#terms">
+                  Terms of Service
+                </a>
+              </li>
+            </ul>
+          </div>
 
-    
-
-    <li>
-      <a href="#status">Status Layanan</a>
-    </li>
-
-    <li>
-      <a href="#privacy">Privacy Policy</a>
-    </li>
-
-    <li>
-      <a href="#terms">Terms of Service</a>
-    </li>
-  </ul>
-</div>
         </div>
+
         <div className="footer-bottom-copyright">
-          <p>© 2026 SIDOWNLOAD. All rights reserved.</p>
-          <p className="footer-sub-text">Made with <span style={{ color: "#ef4444" }}>❤️</span> for everyone</p>
+          <p>
+            © 2026 SIDOWNLOAD. All rights reserved.
+          </p>
+
+          <p className="footer-sub-text">
+            Made with{" "}
+            <span style={{ color: "#ef4444" }}>
+              ❤️
+            </span>{" "}
+            for everyone
+          </p>
         </div>
-            </footer>
+      </footer>
     </div>
   );
 }
